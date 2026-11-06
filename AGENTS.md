@@ -47,6 +47,12 @@ finds the patterns across every talk.
 
 - Edit `.prose.md` sources, recompile, promote. Hand-editing `dist/` or `state/`
   produces a receipt that lies.
+- A compile must read the shapes in `### Maintains`. A `[]` path over a keyed map
+  (`{ [id]: … }`) must hash each member under its key, and a map of arrays must
+  reach the array's members. Fields a contract calls immaterial stay out of the
+  fingerprint. Otherwise populated truth hashes as empty and subscribers never
+  wake, with no error. `mise run fingerprints` catches this; run it before
+  promoting.
 - A talk is faithful when its body is an **in-order token subsequence** of the
   transcript. ASR garble stays; correcting it changes evidence.
 - Photo filenames are **UTC**; convert with the event timezone before comparing
@@ -59,6 +65,7 @@ finds the patterns across every talk.
 
 ## Done means
 
-`mise run contracts`, `mise run validate`, and `mise run typecheck` pass,
+`mise run contracts`, `mise run validate`, `mise run fingerprints` (when `dist/`
+exists), and `mise run typecheck` pass,
 `git status` shows no generated or raw-media files, and any state change has a
 receipt in `state/world-model/<node>/receipts.jsonl`.

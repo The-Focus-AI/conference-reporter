@@ -14,6 +14,7 @@ This file is the operator/host mapping for that doctrine in *this* repository.
 | Piece | Path | Role |
 | --- | --- | --- |
 | Validator | `scripts/serve/validate-manifest.ts` | Validates `dist/manifest.active.json` against `compiler/ir-v0.md`, checks artifacts, and derives the trigger plan. |
+| Fingerprint check | `scripts/serve/check-fingerprints.ts` | Tests compiled canonicalizers and validators against populated models. Run after every compile, before promoting; the validator cannot catch a canonicalizer that hashes populated truth as empty. |
 | HTTP adapter | `scripts/serve/http-adapter.ts` | Loopback listener. Accepts the declared `POST` ingress routes, returns `202`, spools the event. |
 | Runtime state | `runs/serve/` | `serve.json`, `triggers.json`, `policy.json`, `triggers/` spool, `serve.log.md`. Generated; `runs/` is gitignored. |
 | Trigger plan | `runs/serve/triggers.json` | The resolved cron / HTTP / self-clock registrations from the manifest + contracts. |

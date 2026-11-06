@@ -29,8 +29,12 @@ const root = resolve(flag("root", join(HERE, "..", ".."))!);
 const node = "recording-inbox-watch";
 const firedAt = flag("fired-at") ?? new Date().toISOString();
 
-const ny = (d: Date): string =>
-  d.toLocaleString("sv-SE", { timeZone: "America/New_York" }).replace(" ", "T") + "-04:00";
+const ny = (d: Date): string => {
+  const timeZone = "America/New_York";
+  const offset = new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "longOffset" })
+    .formatToParts(d).find((p) => p.type === "timeZoneName")!.value.replace("GMT", "");
+  return d.toLocaleString("sv-SE", { timeZone }).replace(" ", "T") + offset;
+};
 const now = ny(new Date());
 const localStamp = new Date().toLocaleString("sv-SE", { timeZone: "America/New_York" }).replace(/[-: ]/g, "").slice(0, 14);
 const runId = flag("run-id") ?? `${localStamp.slice(0, 8)}-${localStamp.slice(8, 14)}-${createHash("sha256").update(`${firedAt}${Math.random()}`).digest("hex").slice(0, 6)}`;

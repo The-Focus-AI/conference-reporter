@@ -36,8 +36,8 @@ The one conference truth, structurally:
 
 `Session` is `{ session_id, title, abstract, track, format, room_id, location_note, day, starts_at, ends_at, speaker_ids, status, source_url, source_anchor }`
 where `format` is one of `talk`, `keynote`, `workshop`, `panel`, `break`,
-`registration`, `social`, `side-event`, and `status` is one of `scheduled`,
-`cancelled`, `unscheduled`.
+`registration`, `social`, `side-event`, or `null` when the source does not
+establish one, and `status` is one of `scheduled`, `cancelled`, `unscheduled`.
 
 `Change` is `{ at, seq, kind, session_id, field, before, after, summary, source_url }`
 where `kind` is one of `added`, `removed`, `retitled`, `retimed`,
@@ -118,8 +118,14 @@ the `enrichment.pending` / `enrichment.failed` counts. Immaterial:
 **Postconditions** (self-policed before signing; no separate judge beat):
 
 - Every session has `session_id`, `title`, `starts_at`, `ends_at`, and `status`;
-  every session with a `format` other than `break`, `registration`, or `social`
+  every session with a `format` of `talk`, `keynote`, `workshop`, or `panel`
   has at least one `speaker_id`, and every `speaker_id` resolves in `speakers`.
+  `side-event` needs no speaker. A session whose source does not establish a
+  format has `format: null` and a `coverage.gaps` line; a format is never chosen
+  to satisfy this rule.
+- No session's `abstract` or `title` holds a placeholder such as `TBD`. A title
+  that only repeats the speaker line is kept as published and named in the
+  `coverage.gaps` title line.
 - Every timestamp is offset-qualified ISO 8601 in `event.timezone`; no naive
   local time, no UTC-shifted duplicate.
 - **Completeness**: `program.session_count` equals the sum of `days[].session_count`,

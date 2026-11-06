@@ -1,0 +1,400 @@
+<title>/*SITE_TITLE*/</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a programme you carry. "Right now" first, then the day by time slot, with the
+   room and level beside every session, as on hotel event signage. Tokens from design.md. */
+:root {
+  --ink: #191714;
+  --paper: #fbf8f1;
+  --panel: #f2ecdf;
+  --muted: #6d6458;
+  --rule: #d6cbb8;
+  --accent: #8a2f1d;
+  --on-accent: #fbf8f1;
+  --serif: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #f0e9db; --paper: #1b1815; --panel: #27231e; --muted: #a99e8d; --rule: #423b32;
+    --accent: #e08a70; --on-accent: #1b1815; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ink: #f0e9db; --paper: #1b1815; --panel: #27231e; --muted: #a99e8d; --rule: #423b32;
+  --accent: #e08a70; --on-accent: #1b1815; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 8.5rem; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper); color: var(--ink); font: 1.05rem/1.5 var(--serif);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 4rem;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+.wrap { max-width: 68rem; margin-inline: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.4rem; }
+.wrap > * { min-width: 0; }
+a { color: var(--accent); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.label { font: 600 .74rem/1.3 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); line-height: 1.05; margin: 0; text-wrap: balance; font-weight: 600; }
+h2 { font-size: 1.6rem; line-height: 1.2; margin: 0; text-wrap: balance; font-weight: 600; }
+.mast { display: grid; gap: .7rem; padding-top: 2rem; }
+.mast p { margin: 0; }
+.mast .where { font-size: 1.15rem; }
+.small { font: .85rem/1.45 var(--sans); color: var(--muted); }
+.tz { font: 600 .85rem/1.4 var(--sans); }
+
+/* Right now */
+.now { background: var(--panel); border-left: 4px solid var(--accent); padding: 1.1rem 1.2rem; display: grid; gap: 1rem 2.4rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); align-items: start; }
+.now h2 { font-size: 1.35rem; }
+.now-col { display: grid; gap: .55rem; }
+.now-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.now-list li { display: grid; gap: .05rem; }
+.now-list strong { font-weight: 600; }
+
+/* Sticky controls */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); border-bottom: 1px solid var(--rule); padding-block: .7rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .6rem; }
+.days { display: flex; gap: .3rem; overflow-x: auto; scrollbar-width: none; }
+.day { flex: none; background: none; border: 1px solid var(--rule); padding: .4rem .7rem; font: 600 .85rem/1.2 var(--sans); cursor: pointer; font-variant-numeric: tabular-nums; }
+.day[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.filters { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.filters input[type="search"], .filters select { font: .9rem/1.2 var(--sans); padding: .42rem .55rem; background: var(--paper); border: 1px solid var(--rule); min-width: 0; }
+.filters input[type="search"] { flex: 1 1 11rem; }
+.filters select { flex: 0 1 15rem; }
+.check { font: .88rem/1.2 var(--sans); display: inline-flex; gap: .35rem; align-items: center; cursor: pointer; }
+
+/* Agenda */
+.cols { display: grid; gap: 2.4rem; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 62rem) { .cols { grid-template-columns: minmax(0, 1fr) 19rem; } .side { position: sticky; top: 8rem; align-self: start; max-height: calc(100vh - 9rem); overflow-y: auto; } }
+.agenda { display: grid; gap: 1.4rem; min-width: 0; }
+.slot { display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); gap: .8rem; border-top: 1px solid var(--rule); padding-top: .7rem; }
+.slot > time { font: 600 .92rem/1.45 var(--sans); font-variant-numeric: tabular-nums; }
+.slot.live > time { color: var(--accent); }
+.items { display: grid; gap: 1rem; min-width: 0; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .1rem .6rem; }
+.item.minor .t { font-weight: 400; }
+.t { font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.loc { grid-column: 1; font: .88rem/1.4 var(--sans); }
+.loc b { font-weight: 600; color: var(--accent); }
+.meta { grid-column: 1; font: .82rem/1.4 var(--sans); color: var(--muted); overflow-wrap: anywhere; }
+.star { grid-column: 2; grid-row: 1 / span 2; background: none; border: 0; cursor: pointer; font-size: 1.25rem; line-height: 1; padding: .1rem .2rem; color: var(--muted); min-width: 2rem; min-height: 2rem; }
+.star[aria-pressed="true"] { color: var(--accent); }
+.pill { font: 600 .7rem/1.3 var(--sans); letter-spacing: .04em; border: 1px solid currentColor; padding: 0 .3rem; margin-left: .25rem; white-space: nowrap; }
+.pill.live { color: var(--accent); }
+.cancelled .t { text-decoration: line-through; }
+details { grid-column: 1 / -1; font-size: .98rem; }
+summary { font: .82rem/1.6 var(--sans); color: var(--accent); cursor: pointer; }
+details > div { display: grid; gap: .6rem; padding-block: .4rem .2rem; max-width: 65ch; }
+details p { margin: 0; }
+.empty { border-top: 1px solid var(--rule); padding-top: 1rem; color: var(--muted); }
+
+/* Rooms */
+.side { display: grid; gap: 1.4rem; align-content: start; }
+.floor { display: grid; gap: .2rem; }
+.room { display: block; width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid var(--rule); padding: .5rem 0; cursor: pointer; }
+.room:hover .room-name, .room[aria-pressed="true"] .room-name { color: var(--accent); }
+.room-name { display: block; font: 600 .92rem/1.3 var(--sans); }
+.room-next { display: block; font: .8rem/1.35 var(--sans); color: var(--muted); overflow-wrap: anywhere; }
+
+/* Off-site and gaps */
+.notes { display: grid; gap: 1rem; max-width: 65ch; border-top: 1px solid var(--rule); padding-top: 1.4rem; }
+.notes ul { margin: 0; padding-left: 1.1rem; display: grid; gap: .4rem; }
+.notes p { margin: 0; }
+.gaps { font: .84rem/1.45 var(--sans); }
+@media (max-width: 30rem) { .slot { grid-template-columns: minmax(0, 1fr); gap: .35rem; } }
+@media print { .bar, .star { display: none; } body { background: #fff; } }
+</style>
+
+<div class="wrap">
+  <header class="mast" id="top">
+    <div class="label">Unofficial personal guide</div>
+    <h1 id="name"></h1>
+    <p class="where" id="where"></p>
+    <p class="tz" id="tz"></p>
+  </header>
+
+  <section class="now" id="now" aria-live="polite"></section>
+
+  <div>
+    <div class="bar">
+      <div class="days" id="days" role="group" aria-label="Choose a day"></div>
+      <div class="filters">
+        <input id="q" type="search" placeholder="Search talks and speakers" aria-label="Search talks and speakers">
+        <select id="room" aria-label="Filter by room"></select>
+        <select id="kind" aria-label="Filter by type"></select>
+        <label class="check"><input id="mine" type="checkbox"> Starred only</label>
+      </div>
+    </div>
+    <div class="cols" style="margin-top:1.2rem">
+      <main class="agenda" id="agenda"></main>
+      <aside class="side" id="rooms" aria-label="Rooms"></aside>
+    </div>
+  </div>
+
+  <section class="notes" id="notes"></section>
+</div>
+
+<script>
+const DATA = /*SITE_DATA*/null;
+
+const KINDS = {
+  talks: { label: "Talks and keynotes", formats: ["talk", "keynote", "panel"] },
+  workshops: { label: "Workshops", formats: ["workshop"] },
+  logistics: { label: "Meals, breaks, registration", formats: ["break", "registration", "social"] },
+  side: { label: "Side events", formats: ["side-event"] },
+  other: { label: "Type not published", formats: [null] },
+};
+const FORMAT_LABEL = { talk: "Talk", keynote: "Keynote", panel: "Panel", workshop: "Workshop", break: "Break", registration: "Registration", social: "Social", "side-event": "Side event" };
+const MINOR = new Set(["break", "registration", "social"]);
+
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const $ = (id) => document.getElementById(id);
+const rooms = new Map(DATA.venue.rooms.map((r) => [r.room_id, r]));
+const untitled = new Set(DATA.untitled);
+const safeUrl = (u) => (/^https?:\/\//i.test(u || "") ? u : null);
+
+// Times stay in the event's zone: read the wall clock from the offset-qualified string.
+const clock = (iso) => {
+  let h = +iso.slice(11, 13); const m = iso.slice(14, 16); const ap = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12; return `${h}:${m} ${ap}`;
+};
+const dayName = (date, style) => new Date(date + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", ...style });
+const at = (iso) => Date.parse(iso);
+const nowMs = () => {
+  const m = location.hash.match(/^#now=(.+)$/); // lets a specific moment be previewed
+  const t = m ? Date.parse(decodeURIComponent(m[1])) : NaN;
+  return Number.isNaN(t) ? Date.now() : t;
+};
+const zoneName = (style) => new Intl.DateTimeFormat("en-US", { timeZone: DATA.event.timezone, timeZoneName: style })
+  .formatToParts(new Date(DATA.event.starts_on + "T12:00:00Z")).find((p) => p.type === "timeZoneName").value;
+const whereText = (s) => {
+  const r = s.room && rooms.get(s.room);
+  if (r) return r.floor ? `${r.name} · ${r.floor}` : r.name;
+  return s.note ? `Off-site: ${s.note}` : "Location not published";
+};
+const speakerNames = (s) => s.speakers.map((id) => {
+  const p = DATA.speakers[id]; if (!p) return id;
+  return p.affiliation ? `${p.name} (${p.affiliation})` : p.name;
+}).join(", ");
+
+// Stars are a per-browser convenience; everything works without storage.
+const STORE = `${String(DATA.event.name).toLowerCase().replace(/[^a-z0-9]+/g, "-")}-stars`;
+const stars = (() => { try { return new Set(JSON.parse(localStorage.getItem(STORE) || "[]")); } catch { return new Set(); } })();
+const saveStars = () => { try { localStorage.setItem(STORE, JSON.stringify([...stars])); } catch {} };
+
+const state = { day: null, room: "", kind: "", q: "", mine: false };
+
+function renderMast() {
+  const e = DATA.event, v = DATA.venue;
+  $("name").textContent = e.name;
+  const where = $("where"); where.textContent = "";
+  where.append(`${dayName(e.starts_on, { month: "short", day: "numeric" })}–${dayName(e.ends_on, { month: "short", day: "numeric", year: "numeric" })}, ${v.name}, ${v.address} `);
+  const map = safeUrl(v.maps_url);
+  if (map) { const a = el("a", null, "Open map"); a.href = map; a.target = "_blank"; a.rel = "noopener"; where.append(a); }
+  $("tz").textContent = `All times are ${zoneName("longGeneric")}, the conference's local time.`;
+}
+
+function renderNow() {
+  const t = nowMs(), box = $("now"); box.textContent = "";
+  const scheduled = DATA.sessions.filter((s) => s.status !== "cancelled");
+  const live = scheduled.filter((s) => at(s.start) <= t && t < at(s.end)).sort((a, b) => at(a.end) - at(b.end));
+  const future = scheduled.filter((s) => at(s.start) > t);
+  const nextAt = future.length ? Math.min(...future.map((s) => at(s.start))) : null;
+  const next = future.filter((s) => at(s.start) === nextAt);
+
+  const list = (title, items, withEnd) => {
+    const col = el("div", "now-col"); col.append(el("h2", null, title));
+    const ul = el("ul", "now-list");
+    for (const s of items) {
+      const li = el("li"); li.append(el("strong", null, s.title));
+      li.append(el("span", "loc", whereText(s)));
+      if (withEnd) li.append(el("span", "small", `Until ${clock(s.end)}`));
+      ul.append(li);
+    }
+    col.append(ul); box.append(col);
+  };
+
+  if (live.length) list("Happening now", live, true);
+  if (next.length) {
+    const first = next[0];
+    const until = nextAt - t, days = Math.ceil(until / 864e5);
+    const when = !live.length && until > 864e5
+      ? `First up, in ${days} days: ${dayName(first.day, { weekday: "short", month: "short", day: "numeric" })} at ${clock(first.start)}`
+      : `Next at ${clock(first.start)}`;
+    list(when, next, false);
+  }
+  if (!live.length && !next.length) box.append(el("h2", null, "The conference has ended."));
+}
+
+function renderDays() {
+  const box = $("days"); box.textContent = "";
+  for (const d of DATA.days) {
+    const b = el("button", "day", dayName(d.date, { weekday: "short", month: "short", day: "numeric" }));
+    b.type = "button"; b.setAttribute("aria-pressed", String(state.day === d.date));
+    b.addEventListener("click", () => { state.day = d.date; render(); });
+    box.append(b);
+  }
+}
+
+function fillSelects() {
+  const room = $("room"); room.append(new Option("All rooms", ""));
+  for (const r of DATA.venue.rooms) room.append(new Option(r.name, r.room_id));
+  room.append(new Option("Off-site", "offsite"));
+  const kind = $("kind"); kind.append(new Option("All types", ""));
+  for (const [k, v] of Object.entries(KINDS)) if (DATA.sessions.some((s) => v.formats.includes(s.format))) kind.append(new Option(v.label, k));
+}
+
+function matches(s) {
+  if (state.room === "offsite" ? s.room !== null : state.room && s.room !== state.room) return false;
+  if (state.kind && !KINDS[state.kind].formats.includes(s.format)) return false;
+  if (state.mine && !stars.has(s.id)) return false;
+  if (state.q) {
+    const hay = [s.title, s.abstract, speakerNames(s), whereText(s)].join(" ").toLowerCase();
+    if (!state.q.toLowerCase().split(/\s+/).every((w) => hay.includes(w))) return false;
+  }
+  return true;
+}
+
+function sessionItem(s) {
+  const item = el("article", "item");
+  if (MINOR.has(s.format)) item.classList.add("minor");
+  if (s.status === "cancelled") item.classList.add("cancelled");
+  const t = nowMs();
+  const title = el("div", "t", s.title);
+  if (at(s.start) <= t && t < at(s.end)) title.append(el("span", "pill live", "NOW"));
+  if (s.status === "cancelled") title.append(el("span", "pill", "CANCELLED"));
+  item.append(title);
+
+  const loc = el("div", "loc");
+  const r = s.room && rooms.get(s.room);
+  if (r) { loc.append(el("b", null, r.name)); if (r.floor) loc.append(` · ${r.floor}`); }
+  else loc.append(el("b", null, whereText(s)));
+  item.append(loc);
+
+  const star = el("button", "star", stars.has(s.id) ? "★" : "☆");
+  star.type = "button"; star.setAttribute("aria-pressed", String(stars.has(s.id)));
+  star.setAttribute("aria-label", `Star ${s.title}`);
+  star.addEventListener("click", () => {
+    stars.has(s.id) ? stars.delete(s.id) : stars.add(s.id); saveStars();
+    star.textContent = stars.has(s.id) ? "★" : "☆"; star.setAttribute("aria-pressed", String(stars.has(s.id)));
+    if (state.mine) renderAgenda();
+  });
+  item.append(star);
+
+  const bits = [`${clock(s.start)}–${clock(s.end)}`];
+  bits.push(s.format ? FORMAT_LABEL[s.format] || s.format : "Type not published");
+  const names = speakerNames(s); if (names && !untitled.has(s.id)) bits.push(names);
+  if (untitled.has(s.id)) bits.push("Talk title not published");
+  item.append(el("div", "meta", bits.join(" · ")));
+
+  const people = s.speakers.map((id) => DATA.speakers[id]).filter((p) => p && (p.bio || (p.links || []).length));
+  if (s.abstract || people.length) {
+    const d = el("details"); d.append(el("summary", null, "Details"));
+    const body = el("div");
+    if (s.abstract) body.append(el("p", null, s.abstract));
+    for (const p of people) {
+      const para = el("p"); para.append(el("strong", null, p.name));
+      if (p.bio) para.append(`: ${p.bio}`);
+      for (const u of p.links || []) if (safeUrl(u)) {
+        const a = el("a", null, new URL(u).hostname.replace(/^www\./, "")); a.href = u; a.target = "_blank"; a.rel = "noopener";
+        para.append(" ", a);
+      }
+      body.append(para);
+    }
+    d.append(body); item.append(d);
+  }
+  return item;
+}
+
+function renderAgenda() {
+  const box = $("agenda"); box.textContent = "";
+  const searching = !!state.q;
+  const shown = DATA.sessions.filter((s) => (searching || state.day === s.day) && matches(s))
+    .sort((a, b) => at(a.start) - at(b.start) || whereText(a).localeCompare(whereText(b)));
+  if (!shown.length) {
+    box.append(el("p", "empty", state.mine ? "No starred sessions match. Tap the star on a session to save it here." : "No sessions match these filters."));
+    return;
+  }
+  const t = nowMs();
+  let last = null, items = null, lastDay = null;
+  for (const s of shown) {
+    if (searching && s.day !== lastDay) { box.append(el("div", "label", dayName(s.day, { weekday: "long", month: "short", day: "numeric" }))); lastDay = s.day; last = null; }
+    if (s.start !== last) {
+      const slot = el("section", "slot");
+      if (at(s.start) <= t && t < at(s.end)) slot.classList.add("live");
+      const time = el("time", null, clock(s.start)); time.dateTime = s.start;
+      items = el("div", "items"); slot.append(time, items); box.append(slot); last = s.start;
+    }
+    items.append(sessionItem(s));
+  }
+}
+
+function renderRooms() {
+  const box = $("rooms"); box.textContent = "";
+  box.append(el("h2", null, "Where"));
+  const t = nowMs();
+  const floors = new Map();
+  for (const r of DATA.venue.rooms) { const f = r.floor || "Level not published"; (floors.get(f) || floors.set(f, []).get(f)).push(r); }
+  for (const f of [...floors.keys()].sort()) {
+    const wrap = el("div", "floor"); wrap.append(el("div", "label", f));
+    for (const r of floors.get(f)) {
+      const b = el("button", "room"); b.type = "button"; b.setAttribute("aria-pressed", String(state.room === r.room_id));
+      b.append(el("span", "room-name", r.name));
+      const here = DATA.sessions.filter((s) => s.room === r.room_id && s.status !== "cancelled");
+      const live = here.find((s) => at(s.start) <= t && t < at(s.end));
+      const next = here.filter((s) => at(s.start) > t).sort((x, y) => at(x.start) - at(y.start))[0];
+      const line = live ? `Now: ${live.title}` : next ? `${dayName(next.day, { weekday: "short" })} ${clock(next.start)}: ${next.title}` : "Nothing more scheduled";
+      b.append(el("span", "room-next", line));
+      b.addEventListener("click", () => {
+        state.room = state.room === r.room_id ? "" : r.room_id; $("room").value = state.room; render();
+        if (state.room) $("agenda").scrollIntoView();
+      });
+      wrap.append(b);
+    }
+    box.append(wrap);
+  }
+}
+
+function renderNotes() {
+  const box = $("notes"); box.textContent = "";
+  box.append(el("h2", null, "What this guide can't tell you"));
+  const missing = DATA.gaps.filter((g) => g.startsWith("coverage-gap"));
+  const p = el("p", null, `This guide lists ${DATA.sessions.length} sessions from the conference's own pages. Those pages state no total, so the list may not be complete.`);
+  box.append(p);
+  if (missing.length) {
+    const ul = el("ul"); for (const g of missing) ul.append(el("li", null, g.replace(/^coverage-gap:\s*/, "")));
+    box.append(ul);
+  }
+  const d = el("details"); d.append(el("summary", null, `All ${DATA.gaps.length} known gaps in the source`));
+  const body = el("div"); const list = el("ul", "gaps"); for (const g of DATA.gaps) list.append(el("li", null, g));
+  body.append(list); d.append(body); box.append(d);
+  const src = safeUrl(DATA.event.official_url);
+  const foot = el("p", "small");
+  foot.append("Not affiliated with the organizers. Check the ");
+  if (src) { const a = el("a", null, "official site"); a.href = src; a.target = "_blank"; a.rel = "noopener"; foot.append(a); } else foot.append("official site");
+  foot.append(` for changes.${DATA.verified ? ` Source pages last read ${new Date(DATA.verified).toLocaleString("en-US", { timeZone: DATA.event.timezone, dateStyle: "medium", timeStyle: "short" })} ${zoneName("shortGeneric")}.` : ""}`);
+  box.append(foot);
+}
+
+function render() { renderDays(); renderAgenda(); renderRooms(); }
+
+function pickDay() {
+  const t = nowMs();
+  const today = new Date(t).toLocaleDateString("en-CA", { timeZone: DATA.event.timezone });
+  state.day = DATA.days.some((d) => d.date === today) ? today : DATA.days[0].date;
+}
+
+function tick() { renderNow(); renderRooms(); if (!document.querySelector("details[open]")) renderAgenda(); }
+
+renderMast(); pickDay(); fillSelects(); renderNow(); renderNotes(); render();
+$("q").addEventListener("input", (e) => { state.q = e.target.value.trim(); renderAgenda(); });
+$("room").addEventListener("change", (e) => { state.room = e.target.value; render(); });
+$("kind").addEventListener("change", (e) => { state.kind = e.target.value; renderAgenda(); });
+$("mine").addEventListener("change", (e) => { state.mine = e.target.checked; renderAgenda(); });
+window.addEventListener("hashchange", () => { pickDay(); renderNow(); render(); });
+setInterval(tick, 60000);
+</script>

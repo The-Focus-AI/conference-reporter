@@ -31,6 +31,10 @@ run = "bun scripts/export-photos.ts --dry-run"
 description = "Validate dist/manifest.active.json and print the trigger plan"
 run = "bun scripts/serve/validate-manifest.ts"
 
+[tasks.fingerprints]
+description = "Check compiled canonicalizers and validators against populated models"
+run = "bun scripts/serve/check-fingerprints.ts"
+
 [tasks.typecheck]
 description = "Typecheck the TypeScript toolchain"
 run = "bun x tsc --noEmit"
@@ -44,6 +48,10 @@ run = "bun scripts/validate-contracts.ts"
 [tasks.skills]
 description = "Restore the skills in skills-lock.json into .agents/skills/"
 run = "npx --yes --cache .npm-cache skills experimental_install"
+
+[tasks.site]
+description = "Render the schedule guide (site/index.html) from the published schedule truth"
+run = "bun scripts/render-site.ts"
 
 [tasks.issue]
 description = "Render a magazine issue.md to print-first issue.html"

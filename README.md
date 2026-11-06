@@ -11,7 +11,7 @@ citation.
 
 This directory is the **template**. It ships the program, contracts, skills, and
 design language, and no conference data. `brief/`, `state/`, `talks/`,
-`recordings/inbox/`, `photos/`, `analysis/`, `notes/inbox/`, `editorial/`,
+`recordings/inbox/`, `photos/`, `site/`, `analysis/`, `notes/inbox/`, `editorial/`,
 `explainers/<slug>/`, `atlases/<slug>/`, and `magazine/<issue>/` are ignored by
 the "conference build data" block in `.gitignore`. A build deletes that block.
 
@@ -141,6 +141,7 @@ recording captured, quotes its evidence, and writes the transcript. See
 | --- | --- |
 | `brief/schedule.md` | The readable brief: masthead, venue and logistics, then the sessions day by day. |
 | `brief/changes.md` | Append-only changelog: added, retitled, retimed, moved room, cancelled, archived. |
+| `site/index.html` | The schedule guide: what is on now, the day by time slot, and every room and level. `mise run site` regenerates it from the schedule truth. |
 | `talks/<date>-<slug>/transcript.md` | The cleaned transcript. Evidence, never edited. |
 | `talks/<date>-<slug>/links.md` | The dossier: speakers, companies, verified posts, papers, repos, and videos. |
 | `talks/<date>-<slug>/photos/` | Photos filed to the talk by capture time and recording window. |
