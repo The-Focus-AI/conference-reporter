@@ -23,7 +23,7 @@ evidence, not a summary — what was said or seen, not what it meant a week late
 - `talk`: optional `talks/<slug>/` the note belongs to, when the user names one.
 - `bucket`: for `kind: todo` only — `review` or `digest`.
 - `timezone`: the event's IANA zone. Default: `event.timezone` from
-  `state/world-model/conference-schedule/published/event/event.json`.
+  `state/world-model/conference-schedule/published/event.json`.
 - `program`: the session windows to match against. Default: `program.sessions`
   from the published schedule truth.
 

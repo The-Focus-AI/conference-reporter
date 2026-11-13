@@ -1,7 +1,7 @@
 ---
 name: talk-photos
 kind: responsibility
-version: 0.1.0
+version: 0.2.0
 ---
 
 # Talk Photos
@@ -20,6 +20,10 @@ A photo is never filed under a talk whose window does not contain it.
 - `program`: the day and session structure — times, rooms, titles, formats.
 - `recordings`: the capture windows of the talks that were actually recorded.
 - `event`: the conference's dates and IANA timezone.
+
+The render also reads the operator's notes under `notes/inbox/` (their `talk:`
+and `captured_at`) to choose between parallel sessions. Notes are evidence the
+render reads, like the photos themselves, not a subscribed facet.
 
 ### Maintains
 
@@ -64,7 +68,10 @@ This facet is what a dossier or a brief subscribes to when it wants the pictures
   session's `[starts_at, ends_at]`, or inside a recording window that is matched
   to that session (the recording-overlap method).
 - **Evidenced**: a `placed` photo names the window that decided it (recording id
-  or session id); a `needs-review` photo lists its candidate sessions.
+  or session id); a `needs-review` photo lists its candidate sessions. A photo
+  placed by `session+attribution` also names the operator note that picked the
+  session among parallel candidates, and lists the candidates it was picked
+  from.
 - **One home**: a photo appears in at most one `placements` entry.
 - **Raw is immutable**: photos in the drop folder are read-only; filing copies
   them into `talks/<slug>/photos/` and never moves or edits the original.
@@ -96,6 +103,11 @@ This facet is what a dossier or a brief subscribes to when it wants the pictures
   only inside its own recording window.
 - when a photo falls in a break, registration, expo, or reception window: file it
   under `event_photos[date]`, not under a talk.
+- when two sessions share the window and no recording is active, but the
+  operator captured a note under `notes/inbox/` whose `talk:` names one of them
+  and whose `captured_at` falls inside that session's window: place the photo
+  there with `method: session+attribution`, quoting the note path in
+  `evidence`. Notes on more than one candidate, or none: `needs-review`.
 - when two talks share the window and no recording is active: `needs-review`
   with both candidates named.
 

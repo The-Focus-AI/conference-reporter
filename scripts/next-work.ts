@@ -7,9 +7,11 @@
  *   bun scripts/next-work.ts --write    # also write editorial/next.md
  *   bun scripts/next-work.ts --json
  *
- * The score is a prompt, not a verdict: theme centrality, visual assets,
- * whether a story exists, and whether the talk is long enough to be worth a
- * page. It never builds anything.
+ * The operator's notes come first: a talk with a transcript and no story is
+ * ranked by how many notes the operator captured on it (notes/inbox/*.md whose
+ * `talk:` is the talk), then by whether the transcript is the local Qwen one.
+ * The score breaks ties: theme centrality, visual assets, and whether the talk
+ * is long enough to be worth a page. It never builds anything.
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
@@ -30,6 +32,9 @@ interface Talk {
   story: boolean;
   experience: boolean;
   themes: number[];
+  notes: number;
+  transcript: boolean;
+  qwen: boolean;
 }
 
 interface Theme {
@@ -94,8 +99,20 @@ function readPhotoPlacements(): Map<string, number> {
   return out;
 }
 
+function readNoteCounts(): Map<string, number> {
+  const dir = join(root, "notes", "inbox");
+  const out = new Map<string, number>();
+  if (!existsSync(dir)) return out;
+  for (const f of readdirSync(dir).filter((f) => f.endsWith(".md"))) {
+    const m = read(join(dir, f)).match(/^talk:\s*"?talks\/([^/"\s]+)\/?"?\s*$/m);
+    if (m) out.set(m[1]!, (out.get(m[1]!) ?? 0) + 1);
+  }
+  return out;
+}
+
 function readTalks(themes: Theme[]): Talk[] {
   if (!existsSync(talksDir)) return [];
+  const noteCounts = readNoteCounts();
   const placed = readPhotoPlacements();
   const themeBySlug = new Map<string, number[]>();
   for (const t of themes) {
@@ -124,6 +141,9 @@ function readTalks(themes: Theme[]): Talk[] {
         photos,
         video: /youtube|youtu\.be|vimeo|video/i.test(links),
         story: existsSync(join(dir, "story.md")),
+        notes: noteCounts.get(slug) ?? 0,
+        transcript: transcript.length > 0,
+        qwen: /^qwen/i.test(fm.source ?? ""),
         experience:
           existsSync(join(dir, "experience", "index.html")) ||
           existsSync(join(dir, "experience", "page.html")),
@@ -144,6 +164,8 @@ function score(t: Talk): number {
 
 function reason(t: Talk): string {
   const bits = [
+    `${t.notes} note${t.notes === 1 ? "" : "s"}`,
+    t.transcript ? (t.qwen ? "Qwen transcript" : "Voice Memos transcript") : "no transcript",
     `${t.themes.length} theme${t.themes.length === 1 ? "" : "s"}`,
     t.photos ? `${t.photos} photo${t.photos === 1 ? "" : "s"}` : "no photos",
     t.video ? "video" : "no video",
@@ -174,6 +196,9 @@ function atlases(): { slug: string; title: string }[] {
 const themes = readThemes();
 const talks = readTalks(themes).sort((a, b) => {
   if (a.story !== b.story) return a.story ? 1 : -1;
+  if (a.transcript !== b.transcript) return a.transcript ? -1 : 1;
+  if (a.notes !== b.notes) return b.notes - a.notes;
+  if (a.qwen !== b.qwen) return a.qwen ? -1 : 1;
   return score(b) - score(a) || a.slug.localeCompare(b.slug);
 });
 const built = atlases();
@@ -194,12 +219,12 @@ if (process.argv.includes("--json")) {
 } else {
   const lines: string[] = [];
   lines.push("# Next work", "");
-  lines.push("Ranked by theme centrality, visual assets, and whether a story exists.", "");
-  lines.push("| Score | Talk | Themes | Photos | Video | Story |");
-  lines.push("| ---: | --- | ---: | ---: | :---: | :---: |");
+  lines.push("Ranked by whether a story exists, then by your notes on the talk, then whether the transcript is Qwen, then theme centrality and visual assets.", "");
+  lines.push("| Notes | Score | Talk | Transcript | Themes | Photos | Video | Story |");
+  lines.push("| ---: | ---: | --- | :---: | ---: | ---: | :---: | :---: |");
   for (const t of talks) {
     lines.push(
-      `| ${score(t)} | ${t.title} | ${t.themes.length} | ${t.photos} | ${t.video ? "yes" : "no"} | ${t.story ? "yes" : "no"} |`,
+      `| ${t.notes} | ${score(t)} | ${t.title} | ${t.transcript ? (t.qwen ? "Qwen" : "Voice Memos") : "—"} | ${t.themes.length} | ${t.photos} | ${t.video ? "yes" : "no"} | ${t.story ? "yes" : "no"} |`,
     );
   }
   lines.push("", "## Start here", "");

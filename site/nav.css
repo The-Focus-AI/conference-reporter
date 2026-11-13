@@ -1,0 +1,39 @@
+/* The site's top bar. Linked by every generated page, inlined into the field
+   guide by render-site.ts, and loaded by the talk runtime. Colours are literal
+   so it reads the same under either token set. */
+.topnav {
+  display: flex; align-items: center; gap: .2rem; overflow-x: auto; scrollbar-width: none;
+  max-width: 78rem; margin: 0 auto; padding: .55rem 0;
+  border-bottom: 1px solid rgba(242, 241, 232, 0.16);
+  font: 600 1.02rem/1 "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  letter-spacing: .05em; text-transform: uppercase;
+  background: rgba(23, 35, 27, 0.92);
+  backdrop-filter: blur(8px);
+}
+.topnav::-webkit-scrollbar { display: none; }
+.topnav a {
+  color: #b9bcae; text-decoration: none; padding: .42rem .68rem; border-radius: 999px;
+  white-space: nowrap; transition: color .15s ease, background-color .15s ease;
+}
+.topnav a:hover { color: #f2f1e8; background: rgba(242, 241, 232, 0.06); }
+.topnav a[aria-current="page"] { color: #17231b; background: #f4cf72; }
+.topnav .brand {
+  color: #f2f1e8; margin-right: auto; padding-left: 0; letter-spacing: .08em;
+  display: inline-flex; align-items: center; gap: .5rem;
+}
+.topnav .brand:hover { background: transparent; color: #f4cf72; }
+.topnav .brand-badge {
+  font: 700 .58rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .12em; color: #a9d18f;
+  border: 1px solid rgba(169, 209, 143, 0.4); border-radius: 999px;
+  padding: .18rem .45rem;
+}
+.topnav a:focus-visible { outline: 2px solid #a9d18f; outline-offset: 2px; }
+@media (max-width: 44rem) {
+  .topnav .brand-badge { display: none; }
+}
+@media (max-width: 34rem) {
+  .topnav .brand { display: none; }
+  .topnav { justify-content: space-between; font-size: .94rem; gap: .1rem; }
+  .topnav a { padding: .42rem .48rem; }
+}

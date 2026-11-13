@@ -1,400 +1,911 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>/*SITE_TITLE*/</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&display=swap">
 <style>
-/* Layout: a programme you carry. "Right now" first, then the day by time slot, with the
-   room and level beside every session, as on hotel event signage. Tokens from design.md. */
+/* Quadrangle, the user's own system from the Walking Thoughts field manual, applied to a
+   conference survey sheet. Deliberately single-theme: dusk forest, every colour explicit.
+   Layout: route, don't review. The guide proposes, you confirm, and a decision lands on
+   your calendar and on the floor plan in the same gesture. */
 :root {
-  --ink: #191714;
-  --paper: #fbf8f1;
-  --panel: #f2ecdf;
-  --muted: #6d6458;
-  --rule: #d6cbb8;
-  --accent: #8a2f1d;
-  --on-accent: #fbf8f1;
-  --serif: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ink: #f0e9db; --paper: #1b1815; --panel: #27231e; --muted: #a99e8d; --rule: #423b32;
-    --accent: #e08a70; --on-accent: #1b1815; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --ink: #f0e9db; --paper: #1b1815; --panel: #27231e; --muted: #a99e8d; --rule: #423b32;
-  --accent: #e08a70; --on-accent: #1b1815; color-scheme: dark;
+  color-scheme: dark;
+  --ground: #17231b;
+  --deep: #101712;
+  --surface: #1e2c22;
+  --raised: #24352a;
+  --ink: #f2f1e8;
+  --ink-muted: #b9bcae;
+  --line: rgba(242, 241, 232, 0.16);
+  --line-strong: rgba(242, 241, 232, 0.38);
+  --action: #f4cf72;      /* the armed choice; your calendar */
+  --identity: #a9d18f;    /* a GO call */
+  --attention: #f0b4a0;   /* clashes and tight changes */
+  --machine: #8fb8d8;     /* what the guide says; links */
+  --on-action: #17231b;
+  --sheet: #ffffff;       /* the plans are printed on white */
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue Condensed", system-ui, sans-serif;
+  --capture: Georgia, "Times New Roman", serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 8.5rem; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body {
-  background: var(--paper); color: var(--ink); font: 1.05rem/1.5 var(--serif);
+  background: var(--ground); color: var(--ink); font: .98rem/1.55 var(--body); -webkit-font-smoothing: antialiased;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 0 4rem;
 }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
-.wrap { max-width: 68rem; margin-inline: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.4rem; }
-.wrap > * { min-width: 0; }
-a { color: var(--accent); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--ground); }
+.sheet { max-width: 68rem; margin-inline: auto; display: grid; grid-template-columns: minmax(0, 1fr); }
+.sheet > * { min-width: 0; }
+a { color: var(--machine); }
+p { margin: 0; }
 button, input, select { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.label { font: 600 .74rem/1.3 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); line-height: 1.05; margin: 0; text-wrap: balance; font-weight: 600; }
-h2 { font-size: 1.6rem; line-height: 1.2; margin: 0; text-wrap: balance; font-weight: 600; }
-.mast { display: grid; gap: .7rem; padding-top: 2rem; }
-.mast p { margin: 0; }
-.mast .where { font-size: 1.15rem; }
-.small { font: .85rem/1.45 var(--sans); color: var(--muted); }
-.tz { font: 600 .85rem/1.4 var(--sans); }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--identity); outline-offset: 2px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 
-/* Right now */
-.now { background: var(--panel); border-left: 4px solid var(--accent); padding: 1.1rem 1.2rem; display: grid; gap: 1rem 2.4rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); align-items: start; }
-.now h2 { font-size: 1.35rem; }
-.now-col { display: grid; gap: .55rem; }
-.now-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
-.now-list li { display: grid; gap: .05rem; }
-.now-list strong { font-weight: 600; }
+.mono { font: 700 .66rem/1.4 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted); }
+h2 { font: 600 1.7rem/1.05 var(--display); letter-spacing: .04em; text-transform: uppercase; margin: 0; text-wrap: balance; }
+.lede { color: var(--ink-muted); max-width: 42rem; }
+.linkish { background: none; border: 0; padding: 0; color: var(--machine); text-decoration: underline; text-underline-offset: .15em; font-size: .86rem; }
+.linkish:hover { color: var(--ink); }
 
-/* Sticky controls */
-.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); border-bottom: 1px solid var(--rule); padding-block: .7rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .6rem; }
-.days { display: flex; gap: .3rem; overflow-x: auto; scrollbar-width: none; }
-.day { flex: none; background: none; border: 1px solid var(--rule); padding: .4rem .7rem; font: 600 .85rem/1.2 var(--sans); cursor: pointer; font-variant-numeric: tabular-nums; }
-.day[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.filters { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
-.filters input[type="search"], .filters select { font: .9rem/1.2 var(--sans); padding: .42rem .55rem; background: var(--paper); border: 1px solid var(--rule); min-width: 0; }
-.filters input[type="search"] { flex: 1 1 11rem; }
-.filters select { flex: 0 1 15rem; }
-.check { font: .88rem/1.2 var(--sans); display: inline-flex; gap: .35rem; align-items: center; cursor: pointer; }
+/* Masthead */
+.masthead { text-align: center; padding-block: clamp(1.6rem, 5vw, 2.8rem) 1.1rem; border-bottom: 1px solid var(--line-strong); }
+.masthead .agency { letter-spacing: .3em; margin-bottom: .8rem; font-size: .62rem; }
+.masthead h1 { font: 600 clamp(2rem, 7vw, 3.1rem)/.95 var(--display); letter-spacing: .03em; text-transform: uppercase; text-wrap: balance; margin: 0; }
+.masthead .sub { font: italic 1.04rem/1.45 var(--capture); color: var(--ink-muted); margin: .8rem auto 0; max-width: 34rem; }
+@media (max-width: 40rem) { .masthead { padding-block: 1.1rem .7rem; } .masthead .sub { display: none; } .masthead .agency { margin-bottom: .5rem; } }
+.marginalia { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .3rem 1rem; padding-block: .6rem; }
+.marginalia a { color: var(--ink-muted); }
 
-/* Agenda */
-.cols { display: grid; gap: 2.4rem; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 62rem) { .cols { grid-template-columns: minmax(0, 1fr) 19rem; } .side { position: sticky; top: 8rem; align-self: start; max-height: calc(100vh - 9rem); overflow-y: auto; } }
-.agenda { display: grid; gap: 1.4rem; min-width: 0; }
-.slot { display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); gap: .8rem; border-top: 1px solid var(--rule); padding-top: .7rem; }
-.slot > time { font: 600 .92rem/1.45 var(--sans); font-variant-numeric: tabular-nums; }
-.slot.live > time { color: var(--accent); }
-.items { display: grid; gap: 1rem; min-width: 0; }
-.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .1rem .6rem; }
-.item.minor .t { font-weight: 400; }
-.t { font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
-.loc { grid-column: 1; font: .88rem/1.4 var(--sans); }
-.loc b { font-weight: 600; color: var(--accent); }
-.meta { grid-column: 1; font: .82rem/1.4 var(--sans); color: var(--muted); overflow-wrap: anywhere; }
-.star { grid-column: 2; grid-row: 1 / span 2; background: none; border: 0; cursor: pointer; font-size: 1.25rem; line-height: 1; padding: .1rem .2rem; color: var(--muted); min-width: 2rem; min-height: 2rem; }
-.star[aria-pressed="true"] { color: var(--accent); }
-.pill { font: 600 .7rem/1.3 var(--sans); letter-spacing: .04em; border: 1px solid currentColor; padding: 0 .3rem; margin-left: .25rem; white-space: nowrap; }
-.pill.live { color: var(--accent); }
-.cancelled .t { text-decoration: line-through; }
-details { grid-column: 1 / -1; font-size: .98rem; }
-summary { font: .82rem/1.6 var(--sans); color: var(--accent); cursor: pointer; }
-details > div { display: grid; gap: .6rem; padding-block: .4rem .2rem; max-width: 65ch; }
-details p { margin: 0; }
-.empty { border-top: 1px solid var(--rule); padding-top: 1rem; color: var(--muted); }
+/* View tabs */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--ground); border-block: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: .7rem .2rem .55rem; font: 600 1.1rem/1.1 var(--display); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-muted); }
+.tab:hover { color: var(--ink); }
+.tab[aria-current="page"] { color: var(--action); border-bottom-color: var(--action); }
+.tab .n { font: 700 .66rem/1 var(--mono); letter-spacing: .04em; margin-left: .3rem; font-variant-numeric: tabular-nums; }
+@media (max-width: 26rem) { .tab { font-size: .98rem; letter-spacing: .02em; } .tab .n { display: block; margin: .2rem 0 0; } }
+.view { display: grid; gap: 1.4rem; padding-top: 1.6rem; min-width: 0; }
+.view > * { min-width: 0; }
+.view-head { display: grid; gap: .45rem; }
 
-/* Rooms */
-.side { display: grid; gap: 1.4rem; align-content: start; }
-.floor { display: grid; gap: .2rem; }
-.room { display: block; width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid var(--rule); padding: .5rem 0; cursor: pointer; }
-.room:hover .room-name, .room[aria-pressed="true"] .room-name { color: var(--accent); }
-.room-name { display: block; font: 600 .92rem/1.3 var(--sans); }
-.room-next { display: block; font: .8rem/1.35 var(--sans); color: var(--muted); overflow-wrap: anywhere; }
+/* Day and level selectors */
+.chips { display: flex; gap: .35rem; overflow-x: auto; scrollbar-width: none; padding-block: 2px; }
+.chip { flex: none; background: none; border: 1px solid var(--line-strong); padding: .42rem .7rem; font: 700 .72rem/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; font-variant-numeric: tabular-nums; color: var(--ink); }
+.chip:hover { border-color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--action); border-color: var(--action); color: var(--on-action); }
+.chip .sub { font-weight: 500; opacity: .75; margin-left: .35rem; }
 
-/* Off-site and gaps */
-.notes { display: grid; gap: 1rem; max-width: 65ch; border-top: 1px solid var(--rule); padding-top: 1.4rem; }
-.notes ul { margin: 0; padding-left: 1.1rem; display: grid; gap: .4rem; }
-.notes p { margin: 0; }
-.gaps { font: .84rem/1.45 var(--sans); }
-@media (max-width: 30rem) { .slot { grid-template-columns: minmax(0, 1fr); gap: .35rem; } }
-@media print { .bar, .star { display: none; } body { background: #fff; } }
+/* The call */
+.pill { display: inline-block; font: 700 .6rem/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; border: 1px solid currentColor; border-radius: 999px; padding: .12rem .5rem; white-space: nowrap; }
+.call-go { color: var(--identity); }
+.call-maybe { color: var(--machine); }
+.call-skip { color: var(--ink-muted); }
+.warn { color: var(--attention); }
+.yours { color: var(--action); }
+
+/* One talk at a time */
+.card { background: var(--surface); border: 1px solid var(--line); border-top: 2px solid var(--action); padding: clamp(1rem, 3vw, 1.6rem); display: grid; gap: 1rem; }
+.card > * { min-width: 0; }
+.card h3 { font: 600 clamp(1.7rem, 4.6vw, 2.5rem)/1 var(--display); letter-spacing: .025em; text-transform: uppercase; margin: 0; text-wrap: balance; overflow-wrap: anywhere; }
+.where { font: 600 .92rem/1.4 var(--body); }
+.where .floor { color: var(--ink-muted); font-weight: 400; }
+.speakers { color: var(--ink-muted); font-size: .92rem; overflow-wrap: anywhere; }
+.rule { background: var(--raised); border-left: 3px solid var(--identity); padding: .85rem 1rem; display: grid; gap: .35rem; }
+.rule.maybe { border-left-color: var(--machine); }
+.rule.skip { border-left-color: var(--ink-muted); }
+.rule.clash { border-left-color: var(--attention); }
+.rule .mono.call-go { color: var(--identity); }
+.rule .mono.call-maybe { color: var(--machine); }
+.actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.act { flex: 1 1 auto; min-height: 2.9rem; background: none; border: 1px solid var(--line-strong); padding: .55rem .95rem; font: 600 1.08rem/1.1 var(--display); letter-spacing: .05em; text-transform: uppercase; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; }
+.act:hover { border-color: var(--ink); }
+.act.armed { background: var(--action); border-color: var(--action); color: var(--on-action); }
+kbd { font: 700 .66rem/1 var(--mono); border: 1px solid currentColor; border-radius: 4px; padding: .14rem .36rem; opacity: .8; }
+@media (hover: none) { kbd { display: none; } .keyhelp { display: none; } }
+.progress { display: flex; justify-content: space-between; gap: .3rem 1rem; flex-wrap: wrap; align-items: baseline; }
+.meter { height: 3px; background: var(--line); }
+.meter i { display: block; height: 100%; background: var(--action); }
+.flash { display: flex; flex-wrap: wrap; gap: .2rem .7rem; align-items: baseline; font-size: .9rem; color: var(--ink-muted); }
+details > summary { cursor: pointer; font-size: .86rem; color: var(--machine); }
+details > div { display: grid; gap: .6rem; padding-top: .5rem; max-width: 42rem; }
+.same { display: grid; gap: .1rem; }
+.same button { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: .6rem; align-items: baseline; text-align: left; background: none; border: 0; border-top: 1px solid var(--line); padding: .5rem 0; width: 100%; }
+.same button:hover .tt { color: var(--action); }
+.same .tt { font-size: .92rem; font-weight: 600; overflow-wrap: anywhere; }
+
+/* Receipts */
+.receipts { display: grid; gap: 1.4rem 2.4rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); align-items: start; }
+.receipts > div { display: grid; gap: .1rem; min-width: 0; }
+.receipt { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .6rem; align-items: baseline; border-top: 1px solid var(--line); padding: .45rem 0; font-size: .9rem; }
+.receipt span { overflow-wrap: anywhere; }
+
+/* Talks */
+.filters { display: flex; flex-wrap: wrap; gap: .5rem; }
+.filters input, .filters select { background: var(--deep); border: 1px solid var(--line-strong); padding: .5rem .6rem; font-size: .92rem; min-width: 0; }
+.filters input { flex: 1 1 12rem; }
+.filters select { flex: 0 1 11rem; }
+.slot { display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); gap: .8rem; border-top: 1px solid var(--line-strong); padding-top: .7rem; }
+.slot > time { font: 700 .76rem/1.7 var(--mono); font-variant-numeric: tabular-nums; }
+.items { display: grid; gap: 1.1rem; min-width: 0; }
+.talk { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .2rem .7rem; }
+.talk > * { min-width: 0; }
+.talk .t { font: 600 1.28rem/1.12 var(--display); letter-spacing: .015em; overflow-wrap: anywhere; }
+.talk .line { font-size: .86rem; color: var(--ink-muted); grid-column: 1; overflow-wrap: anywhere; }
+.talk .why { font-size: .9rem; grid-column: 1; max-width: 44rem; }
+.talk details { grid-column: 1 / -1; }
+.talk.is-skip .t, .talk.is-skip .why { color: var(--ink-muted); }
+.minor { color: var(--ink-muted); font-size: .88rem; }
+.star { grid-column: 2; grid-row: 1 / span 3; align-self: start; background: none; border: 1px solid var(--line); min-width: 2.6rem; min-height: 2.6rem; font-size: 1.15rem; line-height: 1; color: var(--ink-muted); }
+.star:hover { border-color: var(--action); color: var(--action); }
+.star[aria-pressed="true"] { background: var(--action); border-color: var(--action); color: var(--on-action); }
+.notes { display: grid; gap: .8rem; border-top: 1px solid var(--line-strong); padding-top: 1.2rem; font-size: .88rem; color: var(--ink-muted); }
+.notes ul { margin: 0; padding-left: 1.1rem; display: grid; gap: .35rem; }
+
+/* Calendar */
+.next { background: var(--raised); border-left: 3px solid var(--action); padding: .9rem 1.1rem; display: grid; gap: .3rem; }
+.next strong { font: 600 1.35rem/1.1 var(--display); letter-spacing: .02em; overflow-wrap: anywhere; }
+.toolbar { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; }
+.days { display: grid; gap: 2rem 1.6rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); align-items: start; }
+.day-col { display: grid; gap: .1rem; min-width: 0; }
+.day-col .linkish { justify-self: start; }
+.day-col h3 { font: 600 1.35rem/1 var(--display); letter-spacing: .04em; text-transform: uppercase; margin: 0 0 .5rem; display: flex; justify-content: space-between; gap: .6rem; align-items: baseline; }
+.ev { border-top: 1px solid var(--line); padding: .6rem 0; display: grid; grid-template-columns: 4.6rem minmax(0, 1fr); gap: .1rem .6rem; }
+.ev > time { font: 700 .72rem/1.7 var(--mono); font-variant-numeric: tabular-nums; color: var(--action); }
+.ev .body { display: grid; gap: .2rem; min-width: 0; }
+.ev .t { font: 600 1.14rem/1.14 var(--display); letter-spacing: .015em; overflow-wrap: anywhere; }
+.ev .line { font-size: .84rem; color: var(--ink-muted); overflow-wrap: anywhere; }
+.ev .ctl { display: flex; flex-wrap: wrap; gap: .1rem .9rem; }
+.ev.quiet > time { color: var(--ink-muted); font-weight: 500; }
+.ev.quiet { padding-block: .35rem; }
+.ev.quiet .body { color: var(--ink-muted); font-size: .84rem; }
+.empty { border: 1px dashed var(--line-strong); padding: 1.1rem; display: grid; gap: .6rem; justify-items: start; color: var(--ink-muted); }
+.empty .act { flex: 0 1 auto; color: var(--ink); }
+
+/* Map */
+.map-cols { display: grid; gap: 1.4rem 2.2rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 60rem) { .map-cols { grid-template-columns: minmax(0, 1fr) 21rem; } }
+.map-col { display: grid; gap: .5rem; min-width: 0; }
+.map-frame { background: var(--sheet); border: 1px solid var(--line-strong); overflow: auto; max-height: 92vh; }
+.map-sheet { position: relative; width: 100%; }
+.map-frame.zoomed .map-sheet { width: 250%; }
+.map-sheet img { display: block; width: 100%; max-width: none; height: auto; }
+.map-sheet svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.room-mark { fill: #f4cf72; fill-opacity: .5; stroke: #17231b; mix-blend-mode: multiply; }
+.room-mark.looked { fill: #f0b4a0; }
+.pin-bg { fill: #17231b; }
+.pin-bg.looked { fill: #8a3a24; }
+.pin-tx { fill: #f4cf72; font-family: var(--mono); font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+.pin-tx.looked { fill: #ffffff; }
+.side { display: grid; gap: 1.3rem; min-width: 0; }
+.side > div, .side > details { display: grid; gap: .35rem; }
+.side ul { margin: 0; padding-left: 1.1rem; display: grid; gap: .35rem; font-size: .88rem; }
+.route { font-size: .88rem; }
+.route b { font-weight: 600; }
+.stop { display: grid; grid-template-columns: 1.7rem minmax(0, 1fr); gap: .55rem; text-align: left; background: none; border: 0; border-top: 1px solid var(--line); padding: .55rem 0; width: 100%; align-items: start; }
+.stop:hover .t { color: var(--action); }
+.stop .num { font: 700 .72rem/1.65rem var(--mono); text-align: center; background: var(--deep); border: 1px solid var(--action); color: var(--action); height: 1.7rem; border-radius: 999px; }
+.stop.looked .num { border-color: var(--attention); color: var(--attention); }
+.stop .t { display: block; font: 600 1.05rem/1.14 var(--display); letter-spacing: .015em; overflow-wrap: anywhere; }
+.stop .line { display: block; font-size: .8rem; color: var(--ink-muted); overflow-wrap: anywhere; }
+
+.colophon { margin-top: 2.6rem; padding-top: .9rem; border-top: 1px solid var(--line-strong); display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem 1rem; font-size: .6rem; }
+@media (max-width: 30rem) { .slot { grid-template-columns: minmax(0, 1fr); gap: .3rem; } }
+/*NAV_CSS*/
 </style>
 
-<div class="wrap">
-  <header class="mast" id="top">
-    <div class="label">Unofficial personal guide</div>
+<!--TOPNAV-->
+<div class="sheet">
+  <header class="masthead">
+    <p class="mono agency">Unofficial personal field guide</p>
     <h1 id="name"></h1>
-    <p class="where" id="where"></p>
-    <p class="tz" id="tz"></p>
+    <p class="sub">What to see, where it is, and how to get between the rooms.</p>
   </header>
+  <div class="marginalia mono"><span id="where"></span><span id="tz"></span></div>
 
-  <section class="now" id="now" aria-live="polite"></section>
+  <nav class="nav" aria-label="Guide sections">
+    <button type="button" class="tab" data-view="go-through">Go through<span class="n" id="n-left"></span></button>
+    <button type="button" class="tab" data-view="talks">Talks</button>
+    <button type="button" class="tab" data-view="calendar">Calendar<span class="n" id="n-mine"></span></button>
+    <button type="button" class="tab" data-view="map">Map</button>
+  </nav>
 
-  <div>
-    <div class="bar">
-      <div class="days" id="days" role="group" aria-label="Choose a day"></div>
-      <div class="filters">
-        <input id="q" type="search" placeholder="Search talks and speakers" aria-label="Search talks and speakers">
-        <select id="room" aria-label="Filter by room"></select>
-        <select id="kind" aria-label="Filter by type"></select>
-        <label class="check"><input id="mine" type="checkbox"> Starred only</label>
-      </div>
-    </div>
-    <div class="cols" style="margin-top:1.2rem">
-      <main class="agenda" id="agenda"></main>
-      <aside class="side" id="rooms" aria-label="Rooms"></aside>
-    </div>
-  </div>
+  <main>
+    <section class="view" id="view-go-through" hidden></section>
+    <section class="view" id="view-talks" hidden></section>
+    <section class="view" id="view-calendar" hidden></section>
+    <section class="view" id="view-map" hidden></section>
+  </main>
 
-  <section class="notes" id="notes"></section>
+  <footer class="colophon mono"><span id="sync"></span><span id="verified"></span></footer>
 </div>
 
 <script>
 const DATA = /*SITE_DATA*/null;
 
-const KINDS = {
-  talks: { label: "Talks and keynotes", formats: ["talk", "keynote", "panel"] },
-  workshops: { label: "Workshops", formats: ["workshop"] },
-  logistics: { label: "Meals, breaks, registration", formats: ["break", "registration", "social"] },
-  side: { label: "Side events", formats: ["side-event"] },
-  other: { label: "Type not published", formats: [null] },
-};
-const FORMAT_LABEL = { talk: "Talk", keynote: "Keynote", panel: "Panel", workshop: "Workshop", break: "Break", registration: "Registration", social: "Social", "side-event": "Side event" };
-const MINOR = new Set(["break", "registration", "social"]);
-
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const $ = (id) => document.getElementById(id);
-const rooms = new Map(DATA.venue.rooms.map((r) => [r.room_id, r]));
-const untitled = new Set(DATA.untitled);
+const btn = (cls, text, fn) => { const b = el("button", cls, text); b.type = "button"; b.addEventListener("click", fn); return b; };
 const safeUrl = (u) => (/^https?:\/\//i.test(u || "") ? u : null);
+const extLink = (text, url) => { const a = el("a", null, text); a.href = url; a.target = "_blank"; a.rel = "noopener"; return a; };
+
+const rooms = new Map(DATA.venue.rooms.map((r) => [r.room_id, r]));
+const byId = new Map(DATA.sessions.map((s) => [s.id, s]));
+const untitled = new Set(DATA.untitled);
+const CALLS = DATA.recommendations?.calls || {};
+const CALL_LABEL = { go: "Go", maybe: "Could go either way", skip: "Skip" };
+const FORMAT_LABEL = { talk: "Talk", keynote: "Keynote", panel: "Panel", workshop: "Workshop", break: "Break", registration: "Registration", social: "Social", "side-event": "Side event" };
+const QUIET = new Set(["break", "registration"]);
 
 // Times stay in the event's zone: read the wall clock from the offset-qualified string.
 const clock = (iso) => {
   let h = +iso.slice(11, 13); const m = iso.slice(14, 16); const ap = h >= 12 ? "PM" : "AM";
   h = h % 12 || 12; return `${h}:${m} ${ap}`;
 };
+const span = (s) => `${clock(s.start)}–${clock(s.end)}`;
 const dayName = (date, style) => new Date(date + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", ...style });
+const shortDay = (date) => dayName(date, { weekday: "short", month: "short", day: "numeric" });
 const at = (iso) => Date.parse(iso);
-const nowMs = () => {
-  const m = location.hash.match(/^#now=(.+)$/); // lets a specific moment be previewed
-  const t = m ? Date.parse(decodeURIComponent(m[1])) : NaN;
-  return Number.isNaN(t) ? Date.now() : t;
-};
+const overlaps = (a, b) => a.id !== b.id && at(a.start) < at(b.end) && at(b.start) < at(a.end);
 const zoneName = (style) => new Intl.DateTimeFormat("en-US", { timeZone: DATA.event.timezone, timeZoneName: style })
   .formatToParts(new Date(DATA.event.starts_on + "T12:00:00Z")).find((p) => p.type === "timeZoneName").value;
-const whereText = (s) => {
-  const r = s.room && rooms.get(s.room);
-  if (r) return r.floor ? `${r.name} · ${r.floor}` : r.name;
-  return s.note ? `Off-site: ${s.note}` : "Location not published";
-};
+const floorOf = (s) => rooms.get(s.room)?.floor || null;
+const roomText = (s) => rooms.get(s.room)?.name || (s.note ? `Off-site: ${s.note}` : "Location not published");
+const whereText = (s) => (floorOf(s) ? `${roomText(s)} · ${floorOf(s)}` : roomText(s));
 const speakerNames = (s) => s.speakers.map((id) => {
   const p = DATA.speakers[id]; if (!p) return id;
   return p.affiliation ? `${p.name} (${p.affiliation})` : p.name;
 }).join(", ");
+const canPick = (s) => !QUIET.has(s.format);
 
-// Stars are a per-browser convenience; everything works without storage.
-const STORE = `${String(DATA.event.name).toLowerCase().replace(/[^a-z0-9]+/g, "-")}-stars`;
-const stars = (() => { try { return new Set(JSON.parse(localStorage.getItem(STORE) || "[]")); } catch { return new Set(); } })();
-const saveStars = () => { try { localStorage.setItem(STORE, JSON.stringify([...stars])); } catch {} };
+/* ---- Your plan: go or skip per session. Kept in this browser first, so it works on bad
+   conference wifi, and in your account when the viewer provides one. ---- */
+const SLUG = String(DATA.event.name).toLowerCase().replace(/[^a-z0-9]+/g, "-");
+const PLAN_KEY = `${SLUG}-plan`, OLD_STARS_KEY = `${SLUG}-stars`;
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+let plan = (() => {
+  try {
+    const saved = JSON.parse(store.get(PLAN_KEY) || "null");
+    if (saved?.picks) return saved;
+  } catch {}
+  // Stars from the earlier version of this guide carry over as calendar picks.
+  const picks = {};
+  try { for (const id of JSON.parse(store.get(OLD_STARS_KEY) || "[]")) if (byId.has(id)) picks[id] = "go"; } catch {}
+  return { picks, updatedAt: 0 };
+})();
+let syncMode = "local", planDoc = null, pushTimer = null, pushing = false, pushAgain = false;
 
-const state = { day: null, room: "", kind: "", q: "", mine: false };
+function renderSync() {
+  $("sync").textContent = syncMode === "account" ? "Your plan follows your account across devices" : "Your plan is saved in this browser only";
+}
+async function pushPlan() {
+  if (!planDoc) return;
+  if (pushing) { pushAgain = true; return; }
+  pushing = true;
+  try { await planDoc.set({ picks: plan.picks, updatedAt: plan.updatedAt }); syncMode = "account"; }
+  catch { syncMode = "local"; }
+  pushing = false; renderSync();
+  if (pushAgain) { pushAgain = false; pushPlan(); }
+}
+function savePlan() {
+  plan.updatedAt = Date.now();
+  store.set(PLAN_KEY, JSON.stringify(plan));
+  clearTimeout(pushTimer); pushTimer = setTimeout(pushPlan, 500);
+}
+async function connectAccount() {
+  if (!window.claude?.use) return;
+  const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+  if (!db || !user) return;
+  const id = await user.id();
+  if (!id) return;
+  planDoc = db.doc(`plans/${id}`);
+  planDoc.onSnapshot((snap) => {
+    syncMode = "account"; renderSync();
+    const remote = snap.exists ? snap.data() : null;
+    if (remote && Number(remote.updatedAt) > plan.updatedAt) {
+      plan = { picks: { ...(remote.picks || {}) }, updatedAt: Number(remote.updatedAt) };
+      store.set(PLAN_KEY, JSON.stringify(plan));
+      render();
+    } else if (plan.updatedAt > Number(remote?.updatedAt || 0) || (!remote && Object.keys(plan.picks).length)) {
+      pushPlan();
+    }
+  }, () => { syncMode = "local"; renderSync(); });
+}
 
+const pickOf = (id) => plan.picks[id] || null;
+const myGoes = () => DATA.sessions.filter((s) => pickOf(s.id) === "go").sort((a, b) => at(a.start) - at(b.start));
+const clashesOf = (s) => myGoes().filter((o) => overlaps(s, o));
+
+let lastAction = null;
+function decide(id, value) {
+  const before = pickOf(id);
+  if (value) plan.picks[id] = value; else delete plan.picks[id];
+  lastAction = { id, before, value };
+  savePlan();
+}
+function undo() {
+  if (!lastAction) return;
+  const { id, before } = lastAction;
+  if (before) plan.picks[id] = before; else delete plan.picks[id];
+  state.current = id; lastAction = null;
+  savePlan(); render();
+}
+
+/* ---- View state ---- */
+const VIEWS = ["go-through", "talks", "calendar", "map"];
+const state = { view: "go-through", flowDay: null, current: null, later: new Set(), talksDay: null, q: "", filter: "", mapDay: null, floor: "Level 2", looked: null, zoom: false };
+
+function homeDay() {
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: DATA.event.timezone });
+  return DATA.days.some((d) => d.date === today) ? today : DATA.days[0].date;
+}
+function setView(v, { top = true } = {}) {
+  state.view = v;
+  if (location.hash.slice(1) !== v) { try { location.hash = v; } catch {} }
+  render();
+  if (top) document.querySelector(".nav").scrollIntoView({ block: "start", behavior: "auto" });
+}
+function showOnMap(s) {
+  state.looked = s.id; state.mapDay = s.day;
+  if (floorOf(s)) state.floor = floorOf(s);
+  setView("map");
+}
+
+/* ---- Shared pieces ---- */
+function dayChips(current, onPick, sub) {
+  const box = el("div", "chips"); box.setAttribute("role", "group"); box.setAttribute("aria-label", "Choose a day");
+  for (const d of DATA.days) {
+    const b = btn("chip", shortDay(d.date), () => onPick(d.date));
+    b.setAttribute("aria-pressed", String(current === d.date));
+    const extra = sub?.(d.date); if (extra != null) b.append(el("span", "sub", extra));
+    box.append(b);
+  }
+  return box;
+}
+function callPill(id) {
+  const c = CALLS[id]; if (!c) return null;
+  return el("span", `pill call-${c.call}`, c.call);
+}
+function aboutBlock(s, label = "Read the abstract and speaker notes") {
+  const people = s.speakers.map((id) => DATA.speakers[id]).filter((p) => p && (p.bio || (p.links || []).length));
+  if (!s.abstract && !people.length && !s.video) return null;
+  const d = el("details"); d.append(el("summary", null, label));
+  const body = el("div");
+  if (s.abstract) body.append(el("p", null, s.abstract));
+  if (s.video && safeUrl(s.video)) { const v = el("p"); v.append(extLink("Watch on the livestream (approximate time)", s.video)); body.append(v); }
+  for (const p of people) {
+    const para = el("p"); para.append(el("strong", null, p.name));
+    if (p.bio) para.append(`: ${p.bio}`);
+    for (const u of p.links || []) if (safeUrl(u)) para.append(" ", extLink(new URL(u).hostname.replace(/^www\./, ""), u));
+    body.append(para);
+  }
+  d.append(body);
+  return d;
+}
+
+/* ---- Go through: one talk at a time, my recommendation already armed ---- */
+function pile(day) {
+  const now = Date.now();
+  const open = DATA.sessions.filter((s) => s.day === day && CALLS[s.id] && !pickOf(s.id) && at(s.end) > now);
+  const sorted = open.sort((a, b) => at(a.start) - at(b.start) || roomText(a).localeCompare(roomText(b)));
+  return [...sorted.filter((s) => !state.later.has(s.id)), ...sorted.filter((s) => state.later.has(s.id))];
+}
+const decidable = (day) => DATA.sessions.filter((s) => s.day === day && CALLS[s.id]);
+const totalLeft = () => DATA.days.reduce((n, d) => n + pile(d.date).length, 0);
+
+function route(s, value) {
+  decide(s.id, value); state.later.delete(s.id); state.current = null; render();
+}
+function later(s) {
+  state.later.add(s.id); state.current = null; lastAction = null; render();
+}
+function acceptCall(s) {
+  const c = CALLS[s.id]?.call;
+  if (c === "go") route(s, "go"); else if (c === "skip") route(s, "skip"); else later(s);
+}
+
+function renderFlow() {
+  const box = $("view-go-through"); box.textContent = "";
+  const head = el("div", "view-head");
+  head.append(el("h2", null, "Go through the talks"));
+  head.append(el("p", "lede", "One talk at a time, with my recommendation armed. What you add goes on your calendar and the map."));
+  box.append(head);
+  box.append(dayChips(state.flowDay, (d) => { state.flowDay = d; state.current = null; render(); }, (d) => `${pile(d).length} left`));
+
+  if (lastAction) {
+    const s = byId.get(lastAction.id);
+    const f = el("div", "flash");
+    f.append(`${lastAction.value === "go" ? "Added to your calendar" : "Skipped"}: ${s.title}.`);
+    f.append(btn("linkish", "Undo", undo));
+    if (lastAction.value === "go") f.append(btn("linkish", "See it on the map", () => showOnMap(s)));
+    box.append(f);
+  }
+
+  const day = state.flowDay, list = pile(day);
+  const s = list.find((x) => x.id === state.current) || list[0];
+  if (!s) { renderReceipts(box, day); return renderProfile(box); }
+  state.current = s.id;
+  const all = decidable(day), done = all.filter((x) => pickOf(x.id)).length;
+
+  const prog = el("div", "view-head");
+  const row = el("div", "progress");
+  row.append(el("span", "mono", `${done} of ${all.length} decided · ${shortDay(day)}`));
+  row.append(el("span", "mono yours", `${myGoes().filter((x) => x.day === day).length} on your calendar`));
+  const meter = el("div", "meter"); const bar = el("i"); bar.style.width = `${all.length ? (done / all.length) * 100 : 0}%`; meter.append(bar);
+  prog.append(row, meter); box.append(prog);
+
+  const c = CALLS[s.id];
+  const card = el("article", "card");
+  card.append(el("span", "mono", `${span(s)} · ${s.format ? FORMAT_LABEL[s.format] || s.format : "Type not published"}`));
+  card.append(el("h3", null, s.title));
+  const names = speakerNames(s);
+  if (names && !untitled.has(s.id)) card.append(el("p", "speakers", names));
+  const where = el("p", "where"); where.append(roomText(s));
+  if (floorOf(s)) where.append(el("span", "floor", ` · ${floorOf(s)}`));
+  where.append(" "); if (floorOf(s)) where.append(btn("linkish", "Show on map", () => showOnMap(s)));
+  card.append(where);
+
+  const rule = el("div", `rule ${c.call}`);
+  const label = el("span", `mono call-${c.call}`, `My call: ${CALL_LABEL[c.call]}`);
+  rule.append(label, el("p", null, c.why));
+  card.append(rule);
+
+  const clash = clashesOf(s);
+  if (clash.length) {
+    const r = el("div", "rule clash");
+    r.append(el("span", "mono warn", "Clashes with your calendar"));
+    r.append(el("p", null, clash.map((o) => `${o.title} (${span(o)})`).join("; ")));
+    card.append(r);
+  }
+
+  const actions = el("div", "actions");
+  const add = btn(`act${c.call === "go" ? " armed" : ""}`, "★ Add to calendar", () => route(s, "go"));
+  add.append(el("kbd", null, c.call === "go" ? "⏎" : "g"));
+  const skip = btn(`act${c.call === "skip" ? " armed" : ""}`, "Skip", () => route(s, "skip"));
+  skip.append(el("kbd", null, c.call === "skip" ? "⏎" : "x"));
+  const lat = btn("act", "Decide later", () => later(s));
+  lat.append(el("kbd", null, "j"));
+  actions.append(add, skip, lat);
+  card.append(actions);
+
+  const about = aboutBlock(s);
+  if (about) { about.id = "about"; card.append(about); }
+  box.append(card);
+
+  const others = DATA.sessions.filter((o) => overlaps(s, o) && CALLS[o.id]).sort((a, b) => at(a.start) - at(b.start));
+  if (others.length) {
+    const same = el("div", "same");
+    same.append(el("span", "mono", "At the same time"));
+    for (const o of others) {
+      const b = btn(null, null, () => { state.current = o.id; render(); });
+      b.append(el("span", `pill ${pickOf(o.id) === "go" ? "yours" : `call-${CALLS[o.id].call}`}`, pickOf(o.id) === "go" ? "yours" : pickOf(o.id) === "skip" ? "skipped" : CALLS[o.id].call));
+      const t = el("span", "tt", o.title); b.append(t);
+      same.append(b);
+    }
+    box.append(same);
+  }
+  box.append(el("p", "mono keyhelp", "Keys: ⏎ accept · g add · x skip · j later · r read · m map · u undo"));
+  renderProfile(box);
+}
+
+function renderReceipts(box, day) {
+  const next = DATA.days.find((d) => pile(d.date).length);
+  const head = el("div", "view-head");
+  head.append(el("h2", null, `${shortDay(day)} is done`));
+  head.append(el("p", "lede", next ? `${shortDay(next.date)} still has ${pile(next.date).length} to decide.` : "Every talk has a decision. Your calendar is ready."));
+  box.append(head);
+  const acts = el("div", "actions");
+  if (next) acts.append(btn("act armed", `Go through ${shortDay(next.date)}`, () => { state.flowDay = next.date; render(); }));
+  acts.append(btn(`act${next ? "" : " armed"}`, "See my calendar", () => setView("calendar")));
+  box.append(acts);
+  const all = decidable(day);
+  const wrap = el("div", "receipts");
+  for (const [value, title] of [["go", "On your calendar"], ["skip", "Skipped"]]) {
+    const col = el("div"); const mine = all.filter((s) => pickOf(s.id) === value);
+    col.append(el("span", `mono ${value === "go" ? "yours" : ""}`, `${title} · ${mine.length}`));
+    for (const s of mine) {
+      const r = el("div", "receipt");
+      r.append(el("span", null, `${clock(s.start)} ${s.title}`));
+      r.append(btn("linkish", "Undo", () => { decide(s.id, null); lastAction = null; state.current = s.id; render(); }));
+      col.append(r);
+    }
+    wrap.append(col);
+  }
+  box.append(wrap);
+}
+
+function renderProfile(box) {
+  if (!DATA.recommendations) return;
+  const d = el("details"); d.append(el("summary", null, "How I made these calls"));
+  const b = el("div"); b.append(el("p", null, DATA.recommendations.profile)); d.append(b);
+  box.append(d);
+}
+
+/* ---- Talks: the whole programme, findable ---- */
+function talkRow(s) {
+  const row = el("article", `talk${pickOf(s.id) === "skip" ? " is-skip" : ""}`);
+  const title = el("div", "t", s.title);
+  const pill = callPill(s.id); if (pill) { title.append(" "); title.append(pill); }
+  if (s.status === "cancelled") { title.append(" "); title.append(el("span", "pill warn", "cancelled")); }
+  row.append(title);
+  const go = pickOf(s.id) === "go";
+  const star = btn("star", go ? "★" : "☆", () => { decide(s.id, go ? null : "go"); lastAction = null; render(); });
+  star.setAttribute("aria-pressed", String(go));
+  star.setAttribute("aria-label", go ? `Remove ${s.title} from my calendar` : `Add ${s.title} to my calendar`);
+  row.append(star);
+  const line = el("div", "line");
+  const bits = [`${span(s)}`, whereText(s)];
+  const names = speakerNames(s); if (names && !untitled.has(s.id)) bits.push(names);
+  if (pickOf(s.id) === "skip") bits.push("You skipped this");
+  line.append(bits.join(" · "));
+  if (floorOf(s)) { line.append(" "); line.append(btn("linkish", "Map", () => showOnMap(s))); }
+  row.append(line);
+  if (CALLS[s.id]) row.append(el("p", "why", CALLS[s.id].why));
+  const about = aboutBlock(s, "Abstract and speakers"); if (about) row.append(about);
+  return row;
+}
+function renderTalksList() {
+  const box = $("talks-list"); box.textContent = "";
+  const q = state.q.toLowerCase();
+  const matches = (s) => {
+    if (state.filter === "mine" && pickOf(s.id) !== "go") return false;
+    if (state.filter === "open" && (pickOf(s.id) || !CALLS[s.id])) return false;
+    if (["go", "maybe", "skip"].includes(state.filter) && CALLS[s.id]?.call !== state.filter) return false;
+    if (q) {
+      const hay = [s.title, s.abstract, speakerNames(s), whereText(s), CALLS[s.id]?.why].join(" ").toLowerCase();
+      if (!q.split(/\s+/).every((w) => hay.includes(w))) return false;
+    }
+    return true;
+  };
+  const shown = DATA.sessions.filter((s) => (q || s.day === state.talksDay) && matches(s) && (canPick(s) || !state.filter))
+    .sort((a, b) => at(a.start) - at(b.start) || roomText(a).localeCompare(roomText(b)));
+  if (!shown.length) { box.append(el("p", "lede", "No talks match. Clear the search or filter to see more.")); return; }
+  let last = null, items = null, lastDay = null;
+  for (const s of shown) {
+    if (q && s.day !== lastDay) { box.append(el("span", "mono", dayName(s.day, { weekday: "long", month: "short", day: "numeric" }))); lastDay = s.day; last = null; }
+    if (s.start !== last) {
+      const slot = el("section", "slot");
+      const t = el("time", null, clock(s.start)); t.dateTime = s.start;
+      items = el("div", "items"); slot.append(t, items); box.append(slot); last = s.start;
+    }
+    if (canPick(s)) items.append(talkRow(s));
+    else items.append(el("p", "minor", `${s.title} · ${span(s)} · ${whereText(s)}`));
+  }
+}
+function renderTalks() {
+  const box = $("view-talks");
+  if (!$("q")) {
+    const head = el("div", "view-head");
+    head.append(el("h2", null, "All talks"));
+    head.append(el("p", "lede", "The whole programme with my call on each. Star a talk to put it on your calendar."));
+    const filters = el("div", "filters");
+    const q = el("input"); q.id = "q"; q.type = "search"; q.placeholder = "Search talks, speakers, topics"; q.setAttribute("aria-label", "Search talks, speakers and topics");
+    q.addEventListener("input", (e) => { state.q = e.target.value.trim(); renderTalksList(); });
+    const f = el("select"); f.id = "call-filter"; f.setAttribute("aria-label", "Filter talks");
+    for (const [v, t] of [["", "All sessions"], ["go", "My call: Go"], ["maybe", "My call: Either way"], ["skip", "My call: Skip"], ["mine", "On my calendar"], ["open", "Not decided yet"]]) f.append(new Option(t, v));
+    f.addEventListener("change", (e) => { state.filter = e.target.value; renderTalksList(); });
+    filters.append(q, f);
+    const chips = el("div"); chips.id = "talks-days";
+    const list = el("div"); list.id = "talks-list"; list.style.cssText = "display:grid;gap:1.2rem;min-width:0";
+    box.append(head, chips, filters, list, renderNotes());
+  }
+  const holder = $("talks-days"); holder.textContent = "";
+  holder.append(dayChips(state.talksDay, (d) => { state.talksDay = d; render(); }));
+  renderTalksList();
+}
+function renderNotes() {
+  const box = el("div", "notes");
+  const gaps = DATA.gaps.filter((g) => !(DATA.maps && /floorplan/i.test(g)));
+  box.append(el("p", null, `This guide lists ${DATA.sessions.length} sessions from the conference's own pages. Those pages state no total, so the list may not be complete.`));
+  const missing = gaps.filter((g) => g.startsWith("coverage-gap"));
+  if (missing.length) { const ul = el("ul"); for (const g of missing) ul.append(el("li", null, g.replace(/^coverage-gap:\s*/, ""))); box.append(ul); }
+  const d = el("details"); d.append(el("summary", null, `All ${gaps.length} known gaps in the source`));
+  const body = el("div"); const list = el("ul"); for (const g of gaps) list.append(el("li", null, g));
+  body.append(list); d.append(body); box.append(d);
+  const foot = el("p"); foot.append("Not affiliated with the organizers. Check the ");
+  const src = safeUrl(DATA.event.official_url);
+  foot.append(src ? extLink("official site", src) : "official site"); foot.append(" for changes.");
+  box.append(foot);
+  return box;
+}
+
+/* ---- Calendar: only what you starred ---- */
+let downloads = null;
+const icsText = (t) => String(t).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+const icsTime = (iso) => new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+const icsFold = (line) => { const out = []; let rest = line; while (rest.length > 72) { out.push(rest.slice(0, 72)); rest = " " + rest.slice(72); } out.push(rest); return out.join("\r\n"); };
+function buildIcs() {
+  const stamp = icsTime(new Date().toISOString());
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Field Guide//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:${icsText(DATA.event.name)}`];
+  for (const s of myGoes()) {
+    lines.push("BEGIN:VEVENT", `UID:${String(s.id).replace(/[^A-Za-z0-9-]/g, "")}@field-guide`, `DTSTAMP:${stamp}`, `DTSTART:${icsTime(s.start)}`, `DTEND:${icsTime(s.end)}`, `SUMMARY:${icsText(s.title)}`);
+    const loc = s.room ? `${whereText(s)}, ${DATA.venue.name}` : roomText(s);
+    lines.push(`LOCATION:${icsText(loc)}`);
+    const desc = [speakerNames(s), CALLS[s.id]?.why].filter(Boolean).join("\n\n");
+    if (desc) lines.push(`DESCRIPTION:${icsText(desc)}`);
+    lines.push("END:VEVENT");
+  }
+  lines.push("END:VCALENDAR");
+  return lines.map(icsFold).join("\r\n") + "\r\n";
+}
+function nextUp() {
+  const now = Date.now(), goes = myGoes();
+  const live = goes.filter((s) => at(s.start) <= now && now < at(s.end));
+  if (live.length) return { head: "On now", list: live };
+  const nextAt = goes.filter((s) => at(s.start) > now).map((s) => at(s.start)).sort((a, b) => a - b)[0];
+  return nextAt ? { head: "Next for you", list: goes.filter((s) => at(s.start) === nextAt) } : null;
+}
+function renderNext(box) {
+  const n = nextUp(); if (!n) return;
+  const wrap = el("div", "next");
+  for (const s of n.list) {
+    wrap.append(el("span", "mono yours", `${n.head} · ${shortDay(s.day)} · ${span(s)}`));
+    wrap.append(el("strong", null, s.title));
+    const line = el("p", "where"); line.append(whereText(s)); line.append(" ");
+    if (floorOf(s)) line.append(btn("linkish", "Show on map", () => showOnMap(s)));
+    wrap.append(line);
+  }
+  box.append(wrap);
+}
+function renderCalendar() {
+  const box = $("view-calendar"); box.textContent = "";
+  const goes = myGoes();
+  const head = el("div", "view-head");
+  head.append(el("h2", null, "My calendar"));
+  head.append(el("p", "lede", goes.length ? `${goes.length} ${goes.length === 1 ? "talk" : "talks"} you chose, and nothing else. Meals and breaks show faintly so you can see the shape of each day.` : "Talks you star show up here, and nothing else does."));
+  box.append(head);
+  if (!goes.length) {
+    const e = el("div", "empty");
+    e.append(el("p", null, "Your calendar is empty. Go through the talks and add the ones you want."));
+    e.append(btn("act armed", "Go through the talks", () => setView("go-through")));
+    box.append(e); return;
+  }
+  renderNext(box);
+  const tools = el("div", "toolbar");
+  tools.append(btn("linkish", `See ${goes.length === 1 ? "it" : "them"} on the map`, () => { state.looked = null; state.mapDay = goes.find((s) => at(s.end) > Date.now())?.day || goes[0].day; setView("map"); }));
+  if (downloads) {
+    const status = el("span", "mono");
+    tools.append(btn("linkish", "Export to Google or Apple Calendar (.ics)", async () => {
+      status.textContent = "";
+      try {
+        await downloads.save({ filename: `${SLUG}.ics`, data: new Blob([buildIcs()], { type: "text/calendar" }) });
+        status.textContent = "Saved";
+      } catch (e) { if (e?.code !== "user_declined" && e?.code !== "declined") status.textContent = "The file wasn't saved. Try again."; }
+    }));
+    tools.append(status);
+  }
+  box.append(tools);
+
+  const days = el("div", "days");
+  for (const d of DATA.days) {
+    const mine = goes.filter((s) => s.day === d.date);
+    const main = d.date >= DATA.event.starts_on && d.date <= DATA.event.ends_on;
+    if (!mine.length && !main) continue;
+    const col = el("div", "day-col");
+    const h = el("h3", null, shortDay(d.date));
+    h.append(el("span", "mono yours", `${mine.length}`));
+    col.append(h);
+    if (!mine.length) {
+      col.append(el("p", "lede", "Nothing chosen yet."));
+      col.append(btn("linkish", `Go through ${shortDay(d.date)}`, () => { state.flowDay = d.date; state.current = null; setView("go-through"); }));
+      days.append(col); continue;
+    }
+    const quiet = DATA.sessions.filter((s) => s.day === d.date && s.format === "break");
+    const rows = [...mine, ...quiet].sort((a, b) => at(a.start) - at(b.start));
+    let prev = null;
+    for (const s of rows) {
+      if (s.format === "break") {
+        const q = el("div", "ev quiet"); const t = el("time", null, clock(s.start)); t.dateTime = s.start;
+        const b = el("div", "body", `${s.title} · ${roomText(s)}`); q.append(t, b); col.append(q); continue;
+      }
+      const ev = el("article", "ev");
+      const t = el("time", null, clock(s.start)); t.dateTime = s.start;
+      const body = el("div", "body");
+      const title = el("div", "t", s.title); body.append(title);
+      body.append(el("div", "line", `Until ${clock(s.end)} · ${whereText(s)}`));
+      const clash = clashesOf(s);
+      if (clash.length) body.append(el("div", "line warn", `Clashes with ${clash.map((o) => o.title).join("; ")}`));
+      else if (prev && prev.room && s.room && prev.room !== s.room && at(s.start) - at(prev.end) < 5 * 60000) {
+        const change = floorOf(prev) !== floorOf(s) ? `Tight change: ${floorOf(prev)} to ${floorOf(s)}` : "Tight change between rooms";
+        body.append(el("div", "line warn", change));
+      }
+      const ctl = el("div", "ctl");
+      if (floorOf(s)) ctl.append(btn("linkish", "Show on map", () => showOnMap(s)));
+      ctl.append(btn("linkish", "Remove", () => { decide(s.id, null); lastAction = null; render(); }));
+      body.append(ctl);
+      ev.append(t, body); col.append(ev);
+      prev = s;
+    }
+    days.append(col);
+  }
+  box.append(days);
+}
+
+/* ---- Map: your day drawn on the floor plans ---- */
+const planFor = (floor, day) => {
+  if (!DATA.maps) return null;
+  const onFloor = DATA.maps.plans.filter((p) => p.floor === floor);
+  return onFloor.find((p) => p.dates.includes(day)) || onFloor[onFloor.length - 1] || null;
+};
+const ranges = (nums) => {
+  const out = []; let a = null, b = null;
+  for (const n of nums) { if (a == null) { a = b = n; } else if (n === b + 1) { b = n; } else { out.push(a === b ? `${a}` : `${a}–${b}`); a = b = n; } }
+  if (a != null) out.push(a === b ? `${a}` : `${a}–${b}`);
+  return out.join(",");
+};
+const SVG_NS = "http://www.w3.org/2000/svg", MAP_UNITS = 1932;
+const svgEl = (tag, attrs, cls) => { const e = document.createElementNS(SVG_NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (cls) e.setAttribute("class", cls); return e; };
+
+function dayStops(day) {
+  return myGoes().filter((s) => s.day === day).map((s, i) => ({ s, n: i + 1 }));
+}
+function drawOverlay() {
+  const svg = $("map-marks"), img = $("map-img");
+  if (!svg || !img) return;
+  svg.textContent = "";
+  const plan = planFor(state.floor, state.mapDay); if (!plan) return;
+  const k = MAP_UNITS / (img.clientWidth || 640);   // pins keep a readable screen size at any zoom
+  const looked = state.looked && byId.get(state.looked);
+  const groups = new Map();
+  for (const { s, n } of dayStops(state.mapDay)) {
+    if (!plan.rooms[s.room]) continue;
+    (groups.get(s.room) || groups.set(s.room, []).get(s.room)).push(n);
+  }
+  const lookedRoom = looked && looked.day === state.mapDay && plan.rooms[looked.room] ? looked.room : null;
+  if (lookedRoom && !groups.has(lookedRoom)) groups.set(lookedRoom, []);
+  for (const [room, nums] of groups) {
+    const [x, y, w, h] = plan.rooms[room];
+    const isLooked = room === lookedRoom;
+    svg.append(svgEl("rect", { x, y, width: w, height: h, "stroke-width": 2 * k }, `room-mark${isLooked ? " looked" : ""}`));
+    const label = nums.length ? ranges(nums) : "?";
+    const fs = 12 * k, ph = 22 * k, pw = Math.max(ph, (label.length * 7.6 + 12) * k);
+    // Tucked in the room's corner so the plan's own room label stays readable.
+    const cx = x + pw / 2 + 5 * k, cy = y + ph / 2 + 5 * k;
+    svg.append(svgEl("rect", { x: cx - pw / 2, y: cy - ph / 2, width: pw, height: ph, rx: ph / 2 }, `pin-bg${isLooked ? " looked" : ""}`));
+    const t = svgEl("text", { x: cx, y: cy, "font-size": fs }, `pin-tx${isLooked ? " looked" : ""}`); t.textContent = label; svg.append(t);
+  }
+}
+function renderMap() {
+  const box = $("view-map"); box.textContent = "";
+  const head = el("div", "view-head");
+  head.append(el("h2", null, "Your day on the map"));
+  box.append(head);
+  if (!DATA.maps) { head.append(el("p", "lede", "Floor plans aren't available for this event.")); return; }
+  const stops = dayStops(state.mapDay);
+  head.append(el("p", "lede", stops.length ? `Highlighted rooms are on your calendar for ${shortDay(state.mapDay)}. Numbers follow your day in order.` : `Nothing on your calendar for ${shortDay(state.mapDay)} yet. Add talks and their rooms light up here.`));
+  box.append(dayChips(state.mapDay, (d) => { state.mapDay = d; state.looked = null; render(); }, (d) => { const n = myGoes().filter((s) => s.day === d).length; return n ? `${n}` : null; }));
+
+  const floors = [...new Set(DATA.maps.plans.map((p) => p.floor))];
+  const levels = el("div", "chips"); levels.setAttribute("role", "group"); levels.setAttribute("aria-label", "Choose a level");
+  for (const f of floors) {
+    const n = stops.filter(({ s }) => floorOf(s) === f).length;
+    const b = btn("chip", f, () => { state.floor = f; render(); });
+    b.setAttribute("aria-pressed", String(state.floor === f));
+    if (n) b.append(el("span", "sub", `${n} ${n === 1 ? "stop" : "stops"}`));
+    levels.append(b);
+  }
+
+  const plan = planFor(state.floor, state.mapDay);
+  const cols = el("div", "map-cols");
+  const col = el("div", "map-col");
+  col.append(levels, el("span", "mono", plan.label));
+  const frame = el("div", `map-frame${state.zoom ? " zoomed" : ""}`); frame.tabIndex = 0; frame.setAttribute("role", "region"); frame.setAttribute("aria-label", "Floor plan");
+  const sheet = el("div", "map-sheet");
+  const img = el("img"); img.id = "map-img"; img.alt = plan.alt; img.src = plan.src;
+  img.addEventListener("load", drawOverlay);
+  const svg = svgEl("svg", { id: "map-marks", viewBox: `0 0 ${MAP_UNITS} ${MAP_UNITS}`, "aria-hidden": "true" });
+  sheet.append(img, svg); frame.append(sheet);
+  col.append(frame);
+  const zoom = btn("chip", state.zoom ? "Zoom out" : "Zoom in", () => { state.zoom = !state.zoom; render(); });
+  zoom.setAttribute("aria-pressed", String(state.zoom)); zoom.style.justifySelf = "start";
+  col.append(zoom);
+  const credit = el("p", "mono"); credit.style.cssText = "letter-spacing:.04em;text-transform:none;font-weight:500";
+  credit.append("Plans published by the organizers on the ");
+  const src = safeUrl(DATA.maps.source_url);
+  credit.append(src ? extLink("official venue map", src) : "official venue map");
+  credit.append(". The highlights, notes and routes are this guide's own reading of them, so check on site.");
+  col.append(credit);
+
+  const side = el("div", "side");
+  const list = el("div");
+  list.append(el("span", "mono yours", `Your ${shortDay(state.mapDay)}`));
+  const looked = state.looked && byId.get(state.looked);
+  if (looked && pickOf(looked.id) !== "go" && looked.day === state.mapDay) {
+    const b = btn("stop looked", null, () => { if (floorOf(looked)) { state.floor = floorOf(looked); render(); } });
+    b.append(el("span", "num", "?"));
+    const t = el("span"); t.append(el("span", "t", looked.title), el("span", "line", `Looking up, not on your calendar · ${span(looked)} · ${whereText(looked)}`)); b.append(t);
+    list.append(b);
+  }
+  for (const { s, n } of stops) {
+    const b = btn(`stop${looked?.id === s.id ? " looked" : ""}`, null, () => { state.looked = s.id; if (floorOf(s)) state.floor = floorOf(s); render(); });
+    b.append(el("span", "num", `${n}`));
+    const t = el("span"); t.append(el("span", "t", s.title), el("span", "line", `${span(s)} · ${whereText(s)}`)); b.append(t);
+    list.append(b);
+  }
+  if (!stops.length) {
+    list.append(btn("linkish", `Go through ${shortDay(state.mapDay)}`, () => { state.flowDay = state.mapDay; state.current = null; setView("go-through"); }));
+  }
+  side.append(list);
+  const onPlan = el("details"); onPlan.open = true; onPlan.append(el("summary", null, "What's on this level"));
+  const opb = el("div"); const ul = el("ul"); for (const n of plan.notes) ul.append(el("li", null, n)); opb.append(ul); onPlan.append(opb); side.append(onPlan);
+  const routes = el("details"); routes.open = window.matchMedia("(min-width: 60rem)").matches; routes.append(el("summary", null, "Getting around"));
+  const rb = el("div"); for (const r of DATA.maps.routes) { const p = el("p", "route"); p.append(el("b", null, r.title), `: ${r.text}`); rb.append(p); } routes.append(rb); side.append(routes);
+  const names = el("details"); names.append(el("summary", null, "Room names")); const nb = el("div"); nb.append(el("p", "route", DATA.maps.names)); names.append(nb); side.append(names);
+  cols.append(col, side);
+  box.append(cols);
+  if (img.complete) drawOverlay();
+}
+
+/* ---- Frame ---- */
 function renderMast() {
   const e = DATA.event, v = DATA.venue;
   $("name").textContent = e.name;
-  const where = $("where"); where.textContent = "";
-  where.append(`${dayName(e.starts_on, { month: "short", day: "numeric" })}–${dayName(e.ends_on, { month: "short", day: "numeric", year: "numeric" })}, ${v.name}, ${v.address} `);
+  const where = $("where");
+  where.append(`${dayName(e.starts_on, { month: "short", day: "numeric" })}–${dayName(e.ends_on, { month: "short", day: "numeric" })} · ${v.name} · `);
   const map = safeUrl(v.maps_url);
-  if (map) { const a = el("a", null, "Open map"); a.href = map; a.target = "_blank"; a.rel = "noopener"; where.append(a); }
-  $("tz").textContent = `All times are ${zoneName("longGeneric")}, the conference's local time.`;
+  if (map) where.append(extLink("Street map", map));
+  $("tz").textContent = `All times ${zoneName("shortGeneric")}`;
+  if (DATA.verified) $("verified").textContent = `Source pages last read ${new Date(DATA.verified).toLocaleString("en-US", { timeZone: e.timezone, dateStyle: "medium", timeStyle: "short" })}`;
 }
-
-function renderNow() {
-  const t = nowMs(), box = $("now"); box.textContent = "";
-  const scheduled = DATA.sessions.filter((s) => s.status !== "cancelled");
-  const live = scheduled.filter((s) => at(s.start) <= t && t < at(s.end)).sort((a, b) => at(a.end) - at(b.end));
-  const future = scheduled.filter((s) => at(s.start) > t);
-  const nextAt = future.length ? Math.min(...future.map((s) => at(s.start))) : null;
-  const next = future.filter((s) => at(s.start) === nextAt);
-
-  const list = (title, items, withEnd) => {
-    const col = el("div", "now-col"); col.append(el("h2", null, title));
-    const ul = el("ul", "now-list");
-    for (const s of items) {
-      const li = el("li"); li.append(el("strong", null, s.title));
-      li.append(el("span", "loc", whereText(s)));
-      if (withEnd) li.append(el("span", "small", `Until ${clock(s.end)}`));
-      ul.append(li);
-    }
-    col.append(ul); box.append(col);
-  };
-
-  if (live.length) list("Happening now", live, true);
-  if (next.length) {
-    const first = next[0];
-    const until = nextAt - t, days = Math.ceil(until / 864e5);
-    const when = !live.length && until > 864e5
-      ? `First up, in ${days} days: ${dayName(first.day, { weekday: "short", month: "short", day: "numeric" })} at ${clock(first.start)}`
-      : `Next at ${clock(first.start)}`;
-    list(when, next, false);
+function render() {
+  const left = totalLeft(), mine = myGoes().length;
+  $("n-left").textContent = left ? `${left}` : "";
+  $("n-mine").textContent = mine ? `${mine}` : "";
+  for (const t of document.querySelectorAll(".tab")) {
+    if (t.dataset.view === state.view) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
   }
-  if (!live.length && !next.length) box.append(el("h2", null, "The conference has ended."));
+  for (const v of VIEWS) $(`view-${v}`).hidden = v !== state.view;
+  ({ "go-through": renderFlow, talks: renderTalks, calendar: renderCalendar, map: renderMap })[state.view]();
+  renderSync();
 }
 
-function renderDays() {
-  const box = $("days"); box.textContent = "";
-  for (const d of DATA.days) {
-    const b = el("button", "day", dayName(d.date, { weekday: "short", month: "short", day: "numeric" }));
-    b.type = "button"; b.setAttribute("aria-pressed", String(state.day === d.date));
-    b.addEventListener("click", () => { state.day = d.date; render(); });
-    box.append(b);
-  }
+for (const t of document.querySelectorAll(".tab")) t.addEventListener("click", () => setView(t.dataset.view));
+window.addEventListener("hashchange", () => {
+  const v = location.hash.slice(1);
+  if (VIEWS.includes(v) && v !== state.view) { state.view = v; render(); }
+});
+document.addEventListener("keydown", (e) => {
+  if (state.view !== "go-through" || e.metaKey || e.ctrlKey || e.altKey) return;
+  const tag = e.target.tagName;
+  if (["INPUT", "SELECT", "TEXTAREA"].includes(tag)) return;
+  if (e.key === "Enter" && ["BUTTON", "A", "SUMMARY"].includes(tag)) return;
+  if (e.key === "u") { undo(); return; }
+  const s = state.current && byId.get(state.current);
+  if (!s || pickOf(s.id)) return;
+  const k = e.key;
+  if (k === "Enter") { e.preventDefault(); acceptCall(s); }
+  else if (k === "g") route(s, "go");
+  else if (k === "x") route(s, "skip");
+  else if (k === "j") later(s);
+  else if (k === "m" && floorOf(s)) showOnMap(s);
+  else if (k === "r") { const d = $("about"); if (d) d.open = !d.open; }
+});
+if (window.ResizeObserver) new ResizeObserver(() => { if (state.view === "map") drawOverlay(); }).observe(document.body);
+setInterval(() => { if (state.view === "calendar" && !document.querySelector("details[open]")) renderCalendar(); }, 60000);
+
+const start = homeDay();
+const firstOpen = DATA.days.find((d) => d.date >= start && pile(d.date).length)?.date || DATA.days.find((d) => pile(d.date).length)?.date;
+state.flowDay = firstOpen || start;
+state.talksDay = start;
+state.mapDay = myGoes().find((s) => at(s.end) > Date.now())?.day || start;
+state.floor = "Level 2";
+const initial = location.hash.slice(1);
+state.view = VIEWS.includes(initial) ? initial : (firstOpen ? "go-through" : "calendar");
+
+renderMast();
+render();
+if (window.claude?.use) {
+  connectAccount();
+  window.claude.use("downloads").then((d) => { downloads = d; if (state.view === "calendar") renderCalendar(); });
 }
-
-function fillSelects() {
-  const room = $("room"); room.append(new Option("All rooms", ""));
-  for (const r of DATA.venue.rooms) room.append(new Option(r.name, r.room_id));
-  room.append(new Option("Off-site", "offsite"));
-  const kind = $("kind"); kind.append(new Option("All types", ""));
-  for (const [k, v] of Object.entries(KINDS)) if (DATA.sessions.some((s) => v.formats.includes(s.format))) kind.append(new Option(v.label, k));
-}
-
-function matches(s) {
-  if (state.room === "offsite" ? s.room !== null : state.room && s.room !== state.room) return false;
-  if (state.kind && !KINDS[state.kind].formats.includes(s.format)) return false;
-  if (state.mine && !stars.has(s.id)) return false;
-  if (state.q) {
-    const hay = [s.title, s.abstract, speakerNames(s), whereText(s)].join(" ").toLowerCase();
-    if (!state.q.toLowerCase().split(/\s+/).every((w) => hay.includes(w))) return false;
-  }
-  return true;
-}
-
-function sessionItem(s) {
-  const item = el("article", "item");
-  if (MINOR.has(s.format)) item.classList.add("minor");
-  if (s.status === "cancelled") item.classList.add("cancelled");
-  const t = nowMs();
-  const title = el("div", "t", s.title);
-  if (at(s.start) <= t && t < at(s.end)) title.append(el("span", "pill live", "NOW"));
-  if (s.status === "cancelled") title.append(el("span", "pill", "CANCELLED"));
-  item.append(title);
-
-  const loc = el("div", "loc");
-  const r = s.room && rooms.get(s.room);
-  if (r) { loc.append(el("b", null, r.name)); if (r.floor) loc.append(` · ${r.floor}`); }
-  else loc.append(el("b", null, whereText(s)));
-  item.append(loc);
-
-  const star = el("button", "star", stars.has(s.id) ? "★" : "☆");
-  star.type = "button"; star.setAttribute("aria-pressed", String(stars.has(s.id)));
-  star.setAttribute("aria-label", `Star ${s.title}`);
-  star.addEventListener("click", () => {
-    stars.has(s.id) ? stars.delete(s.id) : stars.add(s.id); saveStars();
-    star.textContent = stars.has(s.id) ? "★" : "☆"; star.setAttribute("aria-pressed", String(stars.has(s.id)));
-    if (state.mine) renderAgenda();
-  });
-  item.append(star);
-
-  const bits = [`${clock(s.start)}–${clock(s.end)}`];
-  bits.push(s.format ? FORMAT_LABEL[s.format] || s.format : "Type not published");
-  const names = speakerNames(s); if (names && !untitled.has(s.id)) bits.push(names);
-  if (untitled.has(s.id)) bits.push("Talk title not published");
-  item.append(el("div", "meta", bits.join(" · ")));
-
-  const people = s.speakers.map((id) => DATA.speakers[id]).filter((p) => p && (p.bio || (p.links || []).length));
-  if (s.abstract || people.length) {
-    const d = el("details"); d.append(el("summary", null, "Details"));
-    const body = el("div");
-    if (s.abstract) body.append(el("p", null, s.abstract));
-    for (const p of people) {
-      const para = el("p"); para.append(el("strong", null, p.name));
-      if (p.bio) para.append(`: ${p.bio}`);
-      for (const u of p.links || []) if (safeUrl(u)) {
-        const a = el("a", null, new URL(u).hostname.replace(/^www\./, "")); a.href = u; a.target = "_blank"; a.rel = "noopener";
-        para.append(" ", a);
-      }
-      body.append(para);
-    }
-    d.append(body); item.append(d);
-  }
-  return item;
-}
-
-function renderAgenda() {
-  const box = $("agenda"); box.textContent = "";
-  const searching = !!state.q;
-  const shown = DATA.sessions.filter((s) => (searching || state.day === s.day) && matches(s))
-    .sort((a, b) => at(a.start) - at(b.start) || whereText(a).localeCompare(whereText(b)));
-  if (!shown.length) {
-    box.append(el("p", "empty", state.mine ? "No starred sessions match. Tap the star on a session to save it here." : "No sessions match these filters."));
-    return;
-  }
-  const t = nowMs();
-  let last = null, items = null, lastDay = null;
-  for (const s of shown) {
-    if (searching && s.day !== lastDay) { box.append(el("div", "label", dayName(s.day, { weekday: "long", month: "short", day: "numeric" }))); lastDay = s.day; last = null; }
-    if (s.start !== last) {
-      const slot = el("section", "slot");
-      if (at(s.start) <= t && t < at(s.end)) slot.classList.add("live");
-      const time = el("time", null, clock(s.start)); time.dateTime = s.start;
-      items = el("div", "items"); slot.append(time, items); box.append(slot); last = s.start;
-    }
-    items.append(sessionItem(s));
-  }
-}
-
-function renderRooms() {
-  const box = $("rooms"); box.textContent = "";
-  box.append(el("h2", null, "Where"));
-  const t = nowMs();
-  const floors = new Map();
-  for (const r of DATA.venue.rooms) { const f = r.floor || "Level not published"; (floors.get(f) || floors.set(f, []).get(f)).push(r); }
-  for (const f of [...floors.keys()].sort()) {
-    const wrap = el("div", "floor"); wrap.append(el("div", "label", f));
-    for (const r of floors.get(f)) {
-      const b = el("button", "room"); b.type = "button"; b.setAttribute("aria-pressed", String(state.room === r.room_id));
-      b.append(el("span", "room-name", r.name));
-      const here = DATA.sessions.filter((s) => s.room === r.room_id && s.status !== "cancelled");
-      const live = here.find((s) => at(s.start) <= t && t < at(s.end));
-      const next = here.filter((s) => at(s.start) > t).sort((x, y) => at(x.start) - at(y.start))[0];
-      const line = live ? `Now: ${live.title}` : next ? `${dayName(next.day, { weekday: "short" })} ${clock(next.start)}: ${next.title}` : "Nothing more scheduled";
-      b.append(el("span", "room-next", line));
-      b.addEventListener("click", () => {
-        state.room = state.room === r.room_id ? "" : r.room_id; $("room").value = state.room; render();
-        if (state.room) $("agenda").scrollIntoView();
-      });
-      wrap.append(b);
-    }
-    box.append(wrap);
-  }
-}
-
-function renderNotes() {
-  const box = $("notes"); box.textContent = "";
-  box.append(el("h2", null, "What this guide can't tell you"));
-  const missing = DATA.gaps.filter((g) => g.startsWith("coverage-gap"));
-  const p = el("p", null, `This guide lists ${DATA.sessions.length} sessions from the conference's own pages. Those pages state no total, so the list may not be complete.`);
-  box.append(p);
-  if (missing.length) {
-    const ul = el("ul"); for (const g of missing) ul.append(el("li", null, g.replace(/^coverage-gap:\s*/, "")));
-    box.append(ul);
-  }
-  const d = el("details"); d.append(el("summary", null, `All ${DATA.gaps.length} known gaps in the source`));
-  const body = el("div"); const list = el("ul", "gaps"); for (const g of DATA.gaps) list.append(el("li", null, g));
-  body.append(list); d.append(body); box.append(d);
-  const src = safeUrl(DATA.event.official_url);
-  const foot = el("p", "small");
-  foot.append("Not affiliated with the organizers. Check the ");
-  if (src) { const a = el("a", null, "official site"); a.href = src; a.target = "_blank"; a.rel = "noopener"; foot.append(a); } else foot.append("official site");
-  foot.append(` for changes.${DATA.verified ? ` Source pages last read ${new Date(DATA.verified).toLocaleString("en-US", { timeZone: DATA.event.timezone, dateStyle: "medium", timeStyle: "short" })} ${zoneName("shortGeneric")}.` : ""}`);
-  box.append(foot);
-}
-
-function render() { renderDays(); renderAgenda(); renderRooms(); }
-
-function pickDay() {
-  const t = nowMs();
-  const today = new Date(t).toLocaleDateString("en-CA", { timeZone: DATA.event.timezone });
-  state.day = DATA.days.some((d) => d.date === today) ? today : DATA.days[0].date;
-}
-
-function tick() { renderNow(); renderRooms(); if (!document.querySelector("details[open]")) renderAgenda(); }
-
-renderMast(); pickDay(); fillSelects(); renderNow(); renderNotes(); render();
-$("q").addEventListener("input", (e) => { state.q = e.target.value.trim(); renderAgenda(); });
-$("room").addEventListener("change", (e) => { state.room = e.target.value; render(); });
-$("kind").addEventListener("change", (e) => { state.kind = e.target.value; renderAgenda(); });
-$("mine").addEventListener("change", (e) => { state.mine = e.target.checked; renderAgenda(); });
-window.addEventListener("hashchange", () => { pickDay(); renderNow(); render(); });
-setInterval(tick, 60000);
 </script>

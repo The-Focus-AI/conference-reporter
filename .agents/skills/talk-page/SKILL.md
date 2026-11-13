@@ -44,6 +44,20 @@ The rail is a stack, not a carousel. The active card is visible; previous cards
 recede to a spine. If the talk has no photos, draw the mechanism. Do not use a
 stock illustration.
 
+**Slide photos are straightened, not just cropped.** A slide shot from the
+audience is skewed. Write the rail image into `experience/` with:
+
+```bash
+python3 scripts/straighten-slide.py talks/<slug>/photos/<photo> talks/<slug>/experience/<name>.jpg
+```
+
+It finds the lit screen's corners and warps it flat (16:9 by default; `--aspect
+4:3` or `auto`). When it refuses ("auto corners don't look like a slide": an LED
+wall, a speaker in front), pass `--corners TL,TR,BR,BL` read off the photo, or
+keep a plain crop (`sips -c H W --cropOffset Y X`) if the shot is head-on. Look
+at the result before using it. The caption says “straightened from
+photos/<file>” or “cropped from photos/<file>”. Never edit the filed original.
+
 ## 4. Compose `talks/<slug>/experience/page.html`
 
 Required shell:

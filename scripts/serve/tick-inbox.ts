@@ -46,6 +46,17 @@ const canon = (v: unknown): unknown =>
   : v && typeof v === "object" ? Object.fromEntries(Object.keys(v as Record<string, unknown>).sort().map((k) => [k, canon((v as Record<string, unknown>)[k])]))
   : v;
 
+// The mover's transcript upgrade runs first: every recording should be on the
+// local Qwen transcript (more accurate than Voice Memos). It runs only on AC power
+// or battery above the floor, and defers otherwise; a recording it upgrades gets
+// a new transcript in force, which moves the folder fingerprint below.
+const upgradeRun = argv.includes("--no-upgrade")
+  ? null
+  : Bun.spawnSync({ cmd: ["bun", join(root, "scripts", "export-voice-memos.ts"), "--transcribe-missing"], cwd: root, stdout: "pipe", stderr: "pipe" });
+const upgradeLine = upgradeRun
+  ? (upgradeRun.stdout.toString().split("\n").filter((l) => l.includes("qwen ")).at(-1) ?? upgradeRun.stderr.toString().trim().split("\n").at(-1) ?? "").trim()
+  : "skipped (--no-upgrade)";
+
 const scan = await scanInbox({ root, inbox: join(root, "recordings", "inbox") });
 const wm: Record<string, unknown> = {
   inbox_scans: {
@@ -117,6 +128,7 @@ const receipt: Omit<Receipt, "sig"> = {
     folder_fingerprint: scan.folder_fingerprint,
     folder_count: scan.folder_count,
     latest_recorded_at: scan.latest_recorded_at,
+    transcript_upgrade: upgradeLine,
   },
   status: "rendered",
   wake: { source: "external", refs: [{ trigger: "cron", trigger_id: triggerId, expression: "*/15 * * * *", fired_at: firedAt }] },
@@ -133,14 +145,20 @@ writeFileSync(join(runDir, "vm.log.md"), `# run:${runId} ${node}
 root: src/recording-inbox-watch.prose.md
 
 1→ [external] cron */15 ${triggerId} ✓
+1→ transcript upgrade: ${upgradeLine}
 1→ scan-recording-inbox ✓ ${scan.folder_count} folders · fingerprint ${scan.folder_fingerprint}
 1→ ${node} ✓ rendered @atomic ${atomic} (${moved ? "MOVED" : "unmoved"})
 1→ [propagate] ${moved ? "recording-intake (@atomic) → wake" : "none — inbox_scans did not move"}
 ---end ${now}
 `);
 
+// Step 7: when the inbox moved, refresh the HTML views so the site shows it.
+const views = moved
+  ? Bun.spawnSync({ cmd: ["bun", join(root, "scripts", "serve", "refresh-views.ts")], cwd: root, stdout: "pipe", stderr: "pipe" }).stdout.toString().trim().split("\n")
+  : [];
+
 console.log(JSON.stringify({
   run_id: runId, node, atomic, moved, prev: prior?.fingerprints["@atomic"] ?? null,
   folder_fingerprint: scan.folder_fingerprint, folder_count: scan.folder_count,
-  postcondition: verdict, trigger_id: triggerId,
+  postcondition: verdict, trigger_id: triggerId, transcript_upgrade: upgradeLine, views,
 }, null, 2));
