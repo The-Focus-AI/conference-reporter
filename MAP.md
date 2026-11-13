@@ -5,7 +5,7 @@ product story is [README.md](README.md); this is where the bytes actually sit.
 
 > **Template or build.** The upstream template tracks `src/`, `scripts/`,
 > `.agents/skills/`, `fixtures/`, `design.md`, and the READMEs. It has no
-> conference data. `brief/`, `state/`, `talks/`, `recordings/inbox/`, `photos/`,
+> conference data. `brief/`, `state/`, `talks/`, `recordings/inbox/`, `photos/`, `site/`,
 > `analysis/`, `notes/inbox/`, `notes/research/`, `editorial/backlog.md`,
 > `editorial/hooks/`, `explainers/<slug>/`, `atlases/<slug>/`, and `magazine/<issue>/` are ignored
 > by the "conference build data" block in `.gitignore`. A build deletes that
@@ -50,7 +50,7 @@ Base: `state/world-model/conference-schedule/published/`.
 | --- | --- |
 | all sessions: title, abstract, room, track, speakers, start/end | `program/sessions.json` |
 | the same, readable | `program/program.md` · `brief/schedule.md` |
-| event name, dates, timezone, status | `event/event.json` |
+| event name, dates, timezone, status | `event.json` |
 | rooms and venue | `venue/venue.json` · `venue/venue.md` |
 | speakers, affiliations, bios, links | `speakers/speakers.json` · `speakers/speakers.md` |
 | what the source page did not publish | `coverage/coverage.md` |
@@ -130,9 +130,10 @@ Missing in both, and how it comes back:
 | `dist/` | `prose compile`, then promote `manifest.next.json` → `manifest.active.json` |
 | `runs/` | the first serve wake |
 | `state/`, `brief/` | the schedule render, in a session opened in the build |
-| `talks/` | `recording-intake` after `mise run sync` |
+| `talks/` | `recording-intake` after `mise run sync` (copy) and the serve tick (Qwen) |
 | `talks/*/photos/`, `photos/event/` | `mise run photos` over the local drop; filed copies stay local |
 | `recordings/**/*.m4a` | `mise run sync` (needs Full Disk Access) |
+| `recordings/inbox/*/transcript.txt` with no Voice Memos transcript | `mise run transcribe` (local Qwen3-ASR, `QWEN_ASR_DIR`) |
 
 A built clone answers questions about the talks and the schedule with nothing
 running. Only new observations need serve. The template has no talks to ask
@@ -146,6 +147,15 @@ sections that hit. Word counts are build-specific.
 - `/talk-ask` — what a talk said, who said it, which talk covered a topic.
 - `/conference-themes` — the patterns across every talk; the first report is
   `analysis/themes.md`.
+
+## The field guide
+
+`mise run site` renders `site/index.html` from the schedule truth through
+`scripts/site/template.html`. Two optional build files feed it:
+`site/map/map.json` (floor plans, room outlines, routes) and
+`site/recommendations.json` (a go, maybe or skip call per session id). The
+render fails if a recommendation names a session no longer in the schedule. A
+viewer's picks live in the published artifact's `plans` collection, not in `state/`.
 
 ## Notes and editorial
 

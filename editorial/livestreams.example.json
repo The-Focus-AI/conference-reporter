@@ -1,0 +1,13 @@
+{
+  "note": "Copy to editorial/livestreams.json. One entry per stream. started_at is the stream's real start (yt-dlp --print '%(release_timestamp)s'), with the event's UTC offset. Session links are approximate: scheduled start minus started_at.",
+  "streams": [
+    {
+      "day": "2026-11-12",
+      "room_id": "<room_id from venue.json>",
+      "video_id": "<YouTube video id>",
+      "title": "Stream title as published",
+      "started_at": "2026-11-12T08:47:01-08:00",
+      "duration_seconds": 32710
+    }
+  ]
+}

@@ -17,20 +17,32 @@ bun scripts/next-work.ts --write    # also editorial/next.md
 
 It scans:
 
-- `talks/*/transcript.md` — title, speakers, duration, word count.
+- `notes/inbox/*.md` — how many notes the operator captured on each talk (`talk:`).
+- `talks/*/transcript.md` — title, speakers, duration, word count, and whether
+  the transcript is the local Qwen one (`source:`).
 - `talks/*/links.md` — a video link.
 - `talks/*/photos/` — filed photos.
 - `talks/*/story.md` and `talks/*/experience/` — has the talk been storied?
 - `analysis/themes.md` — which themes cite the talk.
 - `atlases/*/atlas.json` — existing through-lines.
 
-The score is a prompt, not a verdict:
+The operator's notes decide the order. Unstoried talks with a transcript rank
+first, by how many notes the operator took on them; a Qwen transcript beats a
+Voice Memos one at equal notes. Notes are where the operator's attention went,
+and the story is built from them. The score only breaks ties, and is a prompt,
+not a verdict:
 
 ```
 themes * 3 + min(photos, 8) + video(3) + no-story(8) + long-enough(1)
 ```
 
 ## Read it in three passes
+
+Always lead with the unstoried talk the operator took the most notes on. At
+equal notes, a Qwen transcript beats a Voice Memos one. If the most-noted talk
+is still on Voice Memos, still lead with it, and say its Qwen pass is waiting
+(do not run Qwen to get there unless the operator asks). The passes below are
+secondary context.
 
 1. **Best visual candidate.** The top unstoried talk with photos and video. It
    is the cheapest way to test the talk-page layout.

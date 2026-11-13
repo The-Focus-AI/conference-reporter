@@ -33,6 +33,13 @@ node_modules/
 # whole block so its own brief/, state/, talks/ and artifacts are tracked.
 # See .agents/skills/conference-init/SKILL.md.
 /brief/
+/index.html
+/site/*
+!/site/nav.css
+!/site/pages.css
+!/site/theme.css
+!/site/explorer.css
+!/site/explorer.js
 /state/
 /talks/
 /recordings/inbox/*
@@ -46,6 +53,8 @@ node_modules/
 /notes/research/*
 !/notes/research/.gitkeep
 /editorial/backlog.md
+/editorial/presentation.json
+/editorial/livestreams.json
 /editorial/hooks/*
 !/editorial/hooks/.gitkeep
 /explainers/*/

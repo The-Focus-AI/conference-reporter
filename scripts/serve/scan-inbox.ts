@@ -68,6 +68,7 @@ interface Meta {
   duration_seconds?: number | null;
   transcript_word_count?: number | null;
   audio_sha256?: string | null;
+  transcript?: string | null;
 }
 
 export async function scanInbox(opts: ScanOptions): Promise<ScanResult> {
@@ -90,6 +91,8 @@ export async function scanInbox(opts: ScanOptions): Promise<ScanResult> {
   const failures: ScanFailure[] = [];
   const errors: string[] = [];
   const seen = new Set<string>();
+  // The transcript file each folder's meta.json names, when it is not the default.
+  const chosen = new Map<string, string>();
 
   for (const dir of folders) {
     const folder = basename(dir);
@@ -107,7 +110,11 @@ export async function scanInbox(opts: ScanOptions): Promise<ScanResult> {
       continue;
     }
 
-    const transcriptPath = join(dir, "transcript.txt");
+    // meta.json names the transcript in force; a re-transcription adds a file
+    // beside transcript.txt rather than replacing it.
+    const transcriptFile = typeof meta.transcript === "string" && meta.transcript && !meta.transcript.includes("/") ? meta.transcript : "transcript.txt";
+    if (transcriptFile !== "transcript.txt") chosen.set(folder, transcriptFile);
+    const transcriptPath = join(dir, transcriptFile);
     const hasTranscript = existsSync(transcriptPath);
     const transcript = hasTranscript ? readFileSync(transcriptPath, "utf8") : null;
     const audioSha = opts.verifyHash ? await hashFile(audio) : meta.audio_sha256 ?? null;
@@ -140,7 +147,15 @@ export async function scanInbox(opts: ScanOptions): Promise<ScanResult> {
   }
 
   const ids = Object.keys(recordings).sort();
-  const folderFingerprint = sha256(ids.map((id) => `${recordings[id]!.folder}\t${recordings[id]!.audio_sha256}`).join("\n"));
+  // A folder still waiting for its transcript (deferred local ASR) is marked, and
+  // so is a folder whose meta.json names a transcript other than transcript.txt,
+  // so either change moves the fingerprint and wakes recording-intake. Folders
+  // on their original transcript.txt hash exactly as before.
+  const folderFingerprint = sha256(ids.map((id) => {
+    const r = recordings[id]!;
+    const file = chosen.get(r.folder);
+    return `${r.folder}\t${r.audio_sha256}${r.status === "failed" ? "\tuntranscribed" : ""}${file ? `\t${file}` : ""}`;
+  }).join("\n"));
   const latest = ids.map((id) => recordings[id]!.recorded_at).filter((x): x is string => Boolean(x)).sort().at(-1) ?? null;
 
   return {

@@ -35,9 +35,12 @@ the whole inbox rather than just this wake's arrivals.
 - Read-only: nothing under the inbox is written, moved, or deleted.
 - A folder is only indexed when it contains `audio.m4a`; a folder with audio but
   no `transcript.txt` is indexed with `status: failed` and reported in the
-  return, never dropped.
+  return, never dropped. On low battery the mover defers local transcription,
+  so this is the normal state of a fresh folder until it is plugged in.
 - `new` means *content* new: a folder whose audio hash and transcript hash match
-  the prior entry is not new, even if its mtime changed.
+  the prior entry is not new, even if its mtime changed. The transcript hashed
+  is the one `meta.json` `transcript` names, so a re-transcription made the
+  one in force makes the folder new again.
 - The fingerprint is computed over folder names and audio hashes only, so adding
   an attachment does not re-trigger identification of an already-clean talk.
 - A `meta.json` that cannot be parsed is a hard failure for that folder, not a

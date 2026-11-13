@@ -9,24 +9,52 @@ The transcript is evidence. The story is the reader's cut. Never confuse them.
 
 ## Inputs
 
+- `notes/inbox/*.md` whose `talk:` is this talk — the operator's notes. Read
+  them first: they are what the operator found worth writing down, and the story
+  is built around them.
 - `talks/<slug>/transcript.md` — read the whole thing, including the headings.
 - `talks/<slug>/links.md` — video, speakers, resources.
-- `talks/<slug>/photos/` — what visual material exists.
+- `talks/<slug>/photos/` — the operator's photos. Look at every one: a photo is
+  a note taken with the camera. What they photographed is what they thought
+  mattered, alongside what they wrote down.
 - `analysis/themes.md` — where the talk sits in the conference.
 
-## 1. Propose before writing
+## 1. Frame from the notes and the photos
 
-Give the user, in chat:
+The operator's notes and photos are the frame of the story, not a source of
+quotes for a frame you chose. They record what the operator thought was
+important while listening; the transcript supplies the evidence for it.
 
-- **A one-sentence thesis.** What is this talk actually arguing?
-- **Five candidate key points**, each with a timestamp and a short quote.
+1. **Group the notes and photos.** Put every note for the talk into clusters by
+   what it is about (cost, people, a tool, a question). Count them. A note with
+   emphasis (“!!!”, “super interesting”, “the key thing”) counts double. Then
+   read each photo: name the slide, find the moment it was taken (filenames are
+   UTC; convert to the event timezone and match the transcript heading), and add
+   it to the cluster it belongs to. A photo counts as one beat. A slide that was
+   photographed but has no note is still a beat: give it a cluster of its own
+   rather than leaving it out.
+2. **The heaviest cluster is the spine.** The thesis is the claim that cluster
+   makes. The next clusters are the other chapters, in order of weight. A
+   chapter no note supports needs a reason, and stays short.
+3. **Say what the notes skip.** Parts of the talk with no note or photo behind them are
+   folded into a chapter or left out, not given their own chapter because the
+   speaker spent time on them.
+4. **Answer the questions.** A question in a note is answered in the chapter
+   where the talk answers it, or marked open.
+
+Then give the user, in chat:
+
+- **What the notes and photos say**: the clusters with their counts (notes and
+  photos separately), and what they skip.
+- **The thesis** that follows from the heaviest cluster.
+- **The chapters** (3–6), each naming the notes it is built from, with a
+  timestamp and a short verbatim quote for each.
 - **The visual assets you found**: photos, video, slides, diagrams the talk
   describes.
-- **One question**: who is the reader, and what should they be able to say after
-  the talk?
 
-Wait for the user to pick **three** key points and correct the thesis. Do not
-write the story first.
+If the user says to base it on their notes, or approves the frame, write the
+story without asking again. Otherwise wait for their correction. Do not write
+the story first.
 
 ## 2. Write `talks/<slug>/story.md`
 
@@ -78,7 +106,8 @@ Rules:
 
 - Every quote appears in `transcript.md`.
 - Every timestamp is a `### HH:MM:SS` heading.
-- The key points are the three the user chose.
+- The spine is the heaviest note cluster, and every note lands in a chapter or is named as skipped.
+- The key points are the ones the user approved.
 - The story does not claim more than the talk did.
 - The transcript is byte-identical to before.
 

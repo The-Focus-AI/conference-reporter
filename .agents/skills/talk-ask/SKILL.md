@@ -5,9 +5,17 @@ description: Answer questions about the recorded conference talks from their tra
 
 # Ask the talks
 
-The corpus is 28 `talks/*/transcript.md` files, about 93k words of Apple's ASR,
-each with a dossier beside it. Every answer is **traceable**: each claim names a
+The corpus is every `talks/*/transcript.md` in this build (`ls talks/`), each
+with a dossier beside it. Every answer is **traceable**: each claim names a
 talk and a timestamp. Search is cheaper than a guess here.
+
+Each transcript's frontmatter `source:` names the recogniser.
+`voice-memos-transcript` is Apple's ASR, with word-level timings.
+`qwen3-asr-1.7b` (or another `qwen3-asr-*`) is the local Qwen3-ASR fallback:
+it was prompted with the session's speaker and product names, so those are
+usually right, but its section timestamps are only as fine as its ~5 s
+segments. Say which recogniser a quote came from when two talks disagree on a
+name or a number.
 
 ## 1. Frame the question
 

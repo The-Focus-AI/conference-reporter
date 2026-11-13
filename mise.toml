@@ -1,13 +1,14 @@
 [tools]
 bun = "latest"
+claude = "latest"
 
 # The Bun side is deliberately dumb: move bytes, write down what they are.
 # Identification, matching, and filing are the Prose program's job
 # (src/recording-intake.prose.md).
 
 [tasks.sync]
-description = "Move new Voice Memos recordings into recordings/inbox/ (needs Full Disk Access)"
-run = "bun scripts/export-voice-memos.ts"
+description = "Copy new Voice Memos recordings into recordings/inbox/ (needs Full Disk Access). Copy only: Qwen transcription runs in the serve tick"
+run = "bun scripts/export-voice-memos.ts --asr apple"
 
 [tasks.export]
 description = "Same as sync — one folder per recording, with audio, transcript, meta, attachments"
@@ -16,6 +17,10 @@ run = "bun scripts/export-voice-memos.ts"
 [tasks.dry-run]
 description = "Show which recordings would be moved, with their titles and timestamps"
 run = "bun scripts/export-voice-memos.ts --dry-run"
+
+[tasks.transcribe]
+description = "Transcribe inbox recordings that have no transcript with local Qwen3-ASR"
+run = "bun scripts/export-voice-memos.ts --transcribe-missing"
 
 # Photos: inventory the drop, then let the Prose render file them by talk.
 [tasks.photos]
@@ -31,6 +36,10 @@ run = "bun scripts/export-photos.ts --dry-run"
 description = "Validate dist/manifest.active.json and print the trigger plan"
 run = "bun scripts/serve/validate-manifest.ts"
 
+[tasks.fingerprints]
+description = "Check compiled canonicalizers and validators against populated models"
+run = "bun scripts/serve/check-fingerprints.ts"
+
 [tasks.typecheck]
 description = "Typecheck the TypeScript toolchain"
 run = "bun x tsc --noEmit"
@@ -44,6 +53,18 @@ run = "bun scripts/validate-contracts.ts"
 [tasks.skills]
 description = "Restore the skills in skills-lock.json into .agents/skills/"
 run = "npx --yes --cache .npm-cache skills experimental_install"
+
+[tasks.site]
+description = "Render the schedule guide (site/index.html) from the published schedule truth"
+run = "bun scripts/render-site.ts"
+
+[tasks.views]
+description = "Refresh every HTML page (Today, schedule, talk hubs, themes, people) from current truth"
+run = "bun scripts/serve/refresh-views.ts"
+
+[tasks.pages]
+description = "Render Today (index.html), the talk hubs, themes and people pages under site/"
+run = "bun scripts/render-pages.ts"
 
 [tasks.issue]
 description = "Render a magazine issue.md to print-first issue.html"
@@ -72,3 +93,7 @@ run = "bun scripts/validate-atlas.ts ${INDEX:-atlases/example/index.html}"
 [tasks.atlas-serve]
 description = "Serve an atlas with live follow-up questions (loopback)"
 run = "bun scripts/explainer-server.ts --root . --dir ${DIR:-atlases/example} --agent \"${AGENT:-claude -p}\""
+
+[tasks.publish]
+description = "Commit data changes and push to main, which deploys GitHub Pages"
+run = "bun scripts/serve/publish.ts"

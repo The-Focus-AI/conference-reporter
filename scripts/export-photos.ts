@@ -57,7 +57,9 @@ const manifestPath = resolve(flag("manifest", join(photosDir, "manifest.json")))
 const dryRun = argv.includes("--dry-run");
 
 function eventTimezone(): string {
-  const event = join(root, "state/world-model/conference-schedule/published/event/event.json");
+  const published = join(root, "state/world-model/conference-schedule/published");
+  // The schedule render writes published/event.json; older builds nested it under event/.
+  const event = [join(published, "event.json"), join(published, "event/event.json")].find(existsSync) ?? join(published, "event.json");
   if (existsSync(event)) {
     try {
       return (JSON.parse(readFileSync(event, "utf8")) as { timezone?: string }).timezone ?? "UTC";

@@ -14,10 +14,18 @@ This file is the operator/host mapping for that doctrine in *this* repository.
 | Piece | Path | Role |
 | --- | --- | --- |
 | Validator | `scripts/serve/validate-manifest.ts` | Validates `dist/manifest.active.json` against `compiler/ir-v0.md`, checks artifacts, and derives the trigger plan. |
+| Fingerprint check | `scripts/serve/check-fingerprints.ts` | Tests compiled canonicalizers and validators against populated models. Run after every compile, before promoting; the validator cannot catch a canonicalizer that hashes populated truth as empty. |
 | HTTP adapter | `scripts/serve/http-adapter.ts` | Loopback listener. Accepts the declared `POST` ingress routes, returns `202`, spools the event. |
+| Gateway ticks | `scripts/serve/tick-inbox.ts`, `tick-schedule.ts` | Render a gateway for one cron fire; the inbox tick also runs the Qwen pass (AC power only) and refreshes the views. |
+| Render commit | `scripts/serve/commit-render.ts` | Validates a render's candidate world-model with the compiled postcondition, canonicalizes, publishes, and signs the receipt. |
+| Skip receipt | `scripts/serve/skip-receipt.ts` | Signs a memo-hit `skipped` receipt; refuses when an upstream input moved. |
+| Views | `scripts/serve/refresh-views.ts` | `mise run views`: re-renders every page from current truth. |
+| Publish | `scripts/serve/publish.ts` | `mise run publish`: commits data paths only and pushes; never forces. |
 | Runtime state | `runs/serve/` | `serve.json`, `triggers.json`, `policy.json`, `triggers/` spool, `serve.log.md`. Generated; `runs/` is gitignored. |
 | Trigger plan | `runs/serve/triggers.json` | The resolved cron / HTTP / self-clock registrations from the manifest + contracts. |
 | Pause policy | `runs/serve/policy.json` | Operator scoping of nodes. Optional. |
+
+The cron prompts that drive the ticks, `prose start`/`prose stop`, and how to brief a render subagent are in [`docs/USAGE.md`](../../docs/USAGE.md) §3 and §8.
 
 Nothing here reloads a changed manifest. Recompile, promote
 `manifest.next.json` → `manifest.active.json`, then restart serve.
@@ -97,6 +105,24 @@ the only intelligent steps.
    nothing.
 6. **Log.** Append one line per wake and per propagation decision to
    `runs/serve/serve.log.md`.
+7. **Refresh the views.** If any receipt this tick was `rendered`, run
+   `bun scripts/serve/refresh-views.ts` (`mise run views`). It re-renders the
+   whole site from the current truth: Today (`index.html`), the schedule
+   (`site/index.html`), the talk hubs, themes and people pages (`site/`), so the site always shows the state of things. The
+   views are projections: they are never read back as truth, need no receipt,
+   and a view that fails to render is reported without failing the tick. The
+   inbox tick (`tick-inbox.ts`) runs this step itself whenever its fingerprint
+   moves; a tick that renders other nodes runs it once at the end.
+8. **Publish (only when asked).** Ticks do not commit or push: changes stay
+   local until the operator asks to publish. Then run `bun scripts/serve/publish.ts
+   --reason "<what moved>"` (`mise run publish`). On `main` it commits the data paths
+   (talks, notes, recordings, state, analysis, brief, editorial, the rendered
+   pages), never code, and pushes to `origin/main`, which deploys GitHub Pages
+   (`.github/workflows/pages.yml`). It publishes only when something a reader
+   would see moved (also a note captured between ticks); receipt ledgers and
+   re-stamped HTML alone wait and ride along with the next real change. It never
+   forces: a rejected push or no network is reported, and the commit stays local
+   for the next tick. Code changes are committed by hand, separately.
 
 Single-flight: one render per node at a time. A wake that arrives while a render
 is in flight marks the node dirty and collapses into one follow-up render; the

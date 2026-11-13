@@ -1,0 +1,25 @@
+{
+  "phase": "live",
+  "brand": "Conf ’26",
+  "badge": "Live",
+  "title": "N shifts after the conference",
+  "summary": "One paragraph for the themes front page: what the talks, taken together, argued.",
+  "dates_label": "Nov 10–12, 2026",
+  "share_text": "Enjoyed your talk",
+  "stack": {
+    "title": "How the themes stack up",
+    "lede": "Pick a theme to see its lead picture, its strongest quote, and the talks behind it.",
+    "axis_top": "",
+    "axis_bottom": "",
+    "unit": "Theme"
+  },
+  "cards": { "title": "The themes", "lede": "Each theme opens into a deep dive with verbatim transcript evidence." },
+  "hero": { "src": "site/visuals/hero.jpg", "alt": "Describe the picture.", "caption": "Illustration · not evidence" },
+  "contested_visual": null,
+  "theme_visuals": {
+    "<theme_id from conference-themes>": { "src": "site/visuals/theme-01.jpg", "alt": "…", "caption": "…" }
+  },
+  "theme_slides": {
+    "<theme_id>": { "src": "talks/<slug>/experience/<slide>.jpg", "alt": "Slide: …", "speaker": "Speaker Name", "slug": "<slug>" }
+  }
+}
