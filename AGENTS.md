@@ -35,6 +35,7 @@ finds the patterns across every talk.
 
 | If you are… | Read |
 | --- | --- |
+| running a conference: serve, notes, Qwen, photos, livestream, stories, publishing | [`docs/USAGE.md`](docs/USAGE.md) |
 | changing a contract | [`contract-markdown.md`](.agents/skills/open-prose/contract-markdown.md), then the contract in `src/`; `mise run contracts` lints the set |
 | running, restarting, or debugging serve | [`scripts/serve/README.md`](scripts/serve/README.md) — tick procedure, policy fencing, receipts |
 | changing the toolchain | [`README.md`](README.md) Toolchain |
@@ -67,5 +68,6 @@ finds the patterns across every talk.
 
 `mise run contracts`, `mise run validate`, `mise run fingerprints` (when `dist/`
 exists), and `mise run typecheck` pass,
-`git status` shows no generated or raw-media files, and any state change has a
-receipt in `state/world-model/<node>/receipts.jsonl`.
+`git status` shows no generated or raw-media files, any state change has a
+receipt in `state/world-model/<node>/receipts.jsonl`, and the views are
+refreshed (`mise run views`) so `index.html` and `site/index.html` show it.
