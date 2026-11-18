@@ -25,12 +25,20 @@ an existing build.
 ## 1. Ask for the build identity
 
 - **Target directory** — default `../<conference-slug>` (a sibling of the master,
-  not inside it), e.g. `../ai-engineer-2026-oct`.
-- **Slug** — the event, year, and month: `ai-engineer-2026-oct`, not just a
-  city and a year.
+  not inside it), e.g. `../2026-10-ai-engineer-nyc`.
+- **Slug** — `yyyy-mm-conference-subconference`, all lowercase, hyphenated:
+  - `yyyy-mm` — the month the event starts (`2026-10`), not the day.
+  - `conference` — the brand as the organizer spells it: `ai-engineer`,
+    `ai-native-devcon`, `nvidia-gtc`.
+  - `subconference` — the edition: a named event (`code-summit`) or the city of
+    a regional edition (`nyc`, `miami`, `san-jose`). Omit it only when the
+    brand has a single edition.
+
+  Examples: `2026-10-ai-engineer-nyc`, `2026-11-ai-engineer-code-summit`,
+  `2026-11-ai-native-devcon-nyc`, `2026-03-nvidia-gtc-san-jose`.
 - **Conference URL** — the schedule page. Never invent it.
 - **Repository** — default `<owner>/<conference-slug>`, private unless the user
-  says public, e.g. `The-Focus-AI/ai-engineer-2026-oct`.
+  says public, e.g. `The-Focus-AI/2026-10-ai-engineer-nyc`.
 
 ## 2. Clone the template to the new directory
 

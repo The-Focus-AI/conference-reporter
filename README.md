@@ -77,7 +77,7 @@ session in that directory before compiling or serving.
 ```text
 Run the conference-init skill. This is the master template.
 Create the build at ../<conference-slug>, for example
-../ai-engineer-2026-oct, for <URL>.
+../2026-10-ai-engineer-nyc (yyyy-mm-conference-subconference), for <URL>.
 ```
 
 The manual steps, if you would rather do them yourself in the new directory:

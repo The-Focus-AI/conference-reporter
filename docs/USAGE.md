@@ -77,7 +77,7 @@ Where things live:
    /conference-init
    ```
 
-   It clones to `../<event>-<year>-<month>`, deletes the conference-data fence
+   It clones to `../<yyyy-mm>-<conference>-<subconference>` (e.g. `../2026-10-ai-engineer-nyc`), deletes the conference-data fence
    in `.gitignore`, writes `.env` with `CONFERENCE_URL`, and stops. Open a new
    session in the new directory; never work on a conference in the template.
 
